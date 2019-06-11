@@ -1,0 +1,27 @@
+.alert{
+
+  @success: #5cb85c;
+  @warning: #E2A41F;
+  @error: #d43f3a;
+
+  padding: 15px;
+  margin: 20px 0;
+  border: 1px solid transparent;
+  border-radius: 3px;
+
+  &-success{
+    background-color: lighten(@success, 15%);
+    border-color: lighten(@success, 10%);
+    color: darken(@success, 15%);
+  }
+  &-warning{
+    background-color: lighten(@warning, 15%);
+    border-color: lighten(@warning, 10%);
+    color: darken(@warning, 15%);
+  }
+  &-error{
+    background-color: lighten(@error, 15%);
+    border-color: lighten(@error, 10%);
+    color: darken(@error, 15%);
+  }
+}

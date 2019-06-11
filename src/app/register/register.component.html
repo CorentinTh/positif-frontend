@@ -1,0 +1,128 @@
+<app-page-header>Inscription</app-page-header>
+
+
+<div class="section-container">
+
+  <div fxLayoutAlign="center center">
+    <div fxFlex.lg="33" fxFlex.md="50" fxFlex.sm="75" fxFlex.xs="100" >
+
+      <mat-card>
+
+        <mat-card-header>
+          <mat-card-title>Inscription</mat-card-title>
+        </mat-card-header>
+
+
+        <mat-card-content>
+          <mat-vertical-stepper linear #stepper>
+            <!--          <mat-vertical-stepper #stepper>-->
+
+            <mat-step [stepControl]="firstFormGroup">
+              <form [formGroup]="firstFormGroup">
+                <ng-template matStepLabel>Informations générales</ng-template>
+                <mat-form-field>
+                  <input matInput placeholder="Nom" formControlName="lastname" required>
+                  <mat-error *ngIf="firstFormGroup.invalid && firstFormGroup.controls.lastname.errors && firstFormGroup.controls.lastname.errors.required">Veuillez saisir votre nom</mat-error>
+                </mat-form-field>
+                <mat-form-field>
+                  <input matInput placeholder="Prénom" formControlName="firstname" required>
+                  <mat-error *ngIf="firstFormGroup.invalid && firstFormGroup.controls.firstname.errors && firstFormGroup.controls.firstname.errors.required">Veuillez saisir votre prénom</mat-error>
+                </mat-form-field>
+                <mat-form-field>
+                  <input type="password" matInput placeholder="Mot de passe" formControlName="password" required>
+                  <mat-error *ngIf="firstFormGroup.invalid && firstFormGroup.controls.password.errors && firstFormGroup.controls.password.errors.required">Veuillez saisir un mot de passe</mat-error>
+                  <mat-error *ngIf="firstFormGroup.invalid && firstFormGroup.controls.password.errors && firstFormGroup.controls.password.errors.minlength">La taille de votre mot de passe doit etre supérieur à 4 charactères.</mat-error>
+                </mat-form-field>
+                <mat-form-field>
+                  <input type="password" matInput placeholder="Confirmation du mot de passe"
+                         formControlName="passwordConfirmed" required>
+                  <mat-error *ngIf="firstFormGroup.invalid && firstFormGroup.controls.passwordConfirmed.errors && firstFormGroup.controls.passwordConfirmed.errors.required">Veuillez saisir votre mot de passe à nouveau</mat-error>
+                  <mat-error *ngIf="firstFormGroup.invalid && firstFormGroup.controls.passwordConfirmed.errors && firstFormGroup.controls.passwordConfirmed.errors.mustMatch">Les mots de passe ne correspondent pas</mat-error>
+                </mat-form-field>
+                <div>
+                  <button mat-raised-button color="primary" matStepperNext>Suivant</button>
+                </div>
+              </form>
+            </mat-step>
+
+            <mat-step [stepControl]="secondFormGroup">
+              <form [formGroup]="secondFormGroup">
+                <ng-template matStepLabel>Information de contact</ng-template>
+                <mat-form-field>
+                  <input type="email" matInput placeholder="Email" formControlName="email" required>
+                  <mat-error *ngIf="secondFormGroup.invalid && secondFormGroup.controls.email.errors && secondFormGroup.controls.email.errors.required">Veuillez saisir une adresse email</mat-error>
+                  <mat-error *ngIf="secondFormGroup.invalid && secondFormGroup.controls.email.errors && secondFormGroup.controls.email.errors.email">Le format de votre adresse email est incorrect</mat-error>
+                </mat-form-field>
+                <mat-form-field>
+                  <input type="phone" matInput placeholder="Numéro de téléphone" formControlName="phone" required>
+                  <mat-error *ngIf="secondFormGroup.invalid && secondFormGroup.controls.phone.errors && secondFormGroup.controls.phone.errors.required">Veuillez saisir un numéro de téléphone</mat-error>
+                  <mat-error *ngIf="secondFormGroup.invalid && secondFormGroup.controls.phone.errors && secondFormGroup.controls.phone.errors.pattern">Le format de votre numéro de téléphone est incorrect</mat-error>
+                </mat-form-field>
+                <div>
+                  <button mat-raised-button matStepperPrevious>Retour</button>&nbsp;
+                  <button mat-raised-button color="primary" matStepperNext>Suivant</button>
+                </div>
+              </form>
+            </mat-step>
+
+            <mat-step [stepControl]="thirdFormGroup">
+              <form [formGroup]="thirdFormGroup">
+                <ng-template matStepLabel>Votre adresse</ng-template>
+
+                <div fxLayoutAlign="center center" fxLayout="row" fxLayoutGap="25px">
+                  <div fxFlex="30">
+                    <mat-form-field>
+                      <input matInput placeholder="Numero" formControlName="addressField1" required>
+                      <mat-error *ngIf="thirdFormGroup.invalid && thirdFormGroup.controls.addressField1.errors && thirdFormGroup.controls.addressField1.errors.required">Veuillez saisir un numéro de rue</mat-error>
+                      <mat-error *ngIf="thirdFormGroup.invalid && thirdFormGroup.controls.addressField1.errors && thirdFormGroup.controls.addressField1.errors.pattern">Le format de votre numéro de rue est incorrect</mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="70">
+                    <mat-form-field>
+                      <input matInput placeholder="Rue" formControlName="addressField2" required>
+                      <mat-error *ngIf="thirdFormGroup.invalid && thirdFormGroup.controls.addressField2.errors && thirdFormGroup.controls.addressField2.errors.required">Veuillez saisir un nom de rue</mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div fxLayoutAlign="center center" fxLayout="row" fxLayoutGap="25px">
+                  <div fxFlex="30">
+                    <mat-form-field>
+                      <input matInput placeholder="Code postal" formControlName="addressField3" required>
+                      <mat-error *ngIf="thirdFormGroup.invalid && thirdFormGroup.controls.addressField3.errors && thirdFormGroup.controls.addressField3.errors.required">Veuillez saisir un code postal</mat-error>
+                      <mat-error *ngIf="thirdFormGroup.invalid && thirdFormGroup.controls.addressField3.errors && thirdFormGroup.controls.addressField3.errors.pattern">Le format de votre code postal est incorrect</mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="70">
+                    <mat-form-field>
+                      <input matInput placeholder="Ville" formControlName="addressField4" required>
+                      <mat-error *ngIf="thirdFormGroup.invalid && thirdFormGroup.controls.addressField4.errors && thirdFormGroup.controls.addressField4.errors.required">Veuillez saisir un nom de ville</mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div>
+                  <button mat-raised-button matStepperPrevious>Retour</button>&nbsp;
+                  <button mat-raised-button color="primary" matStepperNext>Suivant</button>
+                </div>
+              </form>
+            </mat-step>
+
+
+            <mat-step>
+              <ng-template matStepLabel>Fin</ng-template>
+              <p>Vous avez fini !</p>
+              <div>
+                <button mat-raised-button color="warn" (click)="stepper.reset()">Annuler</button>&nbsp;
+                <button mat-raised-button color="primary" (click)="submit()">Valider</button>
+              </div>
+            </mat-step>
+          </mat-vertical-stepper>
+        </mat-card-content>
+      </mat-card>
+
+
+    </div>
+  </div>
+</div>
+

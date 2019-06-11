@@ -1,0 +1,59 @@
+<app-page-header>Mediums</app-page-header>
+
+<div class="section-container">
+
+
+  <div>
+    Filtres: &nbsp;
+
+    <mat-form-field>
+      <mat-select placeholder="Type de médium" [(ngModel)]="mediumType">
+        <mat-option>-- Tous --</mat-option>
+        <mat-option value="FORTUNE_TELLER">Voyant</mat-option>
+        <mat-option value="TAROT_READER">Tarologue</mat-option>
+        <mat-option value="ASTROLOGIST">Astrologue</mat-option>
+      </mat-select>
+    </mat-form-field>
+    &nbsp;
+    <mat-form-field>
+      <input matInput placeholder="Rechercher" [(ngModel)]="searchValue">
+    </mat-form-field>
+
+  </div>
+
+  <div fxLayoutAlign="center" *ngIf="!mediums">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div fxLayout="row wrap" fxLayoutAlign="stretch" fxLayoutGap="20px grid" *ngIf="mediums">
+
+    <div
+      fxFlex.lg="16.6666666667"
+      fxFlex.md="25"
+      fxFlex.sm="50"
+      fxFlex.xs="100"
+      *ngFor="let medium of mediums | filterBy:searchValue:searchFields | filterBy:mediumType:['talent']"
+      fxLayoutAlign="stretch"
+    >
+
+      <mat-card>
+        <div class="mat-card-image-container">
+          <img mat-card-image [src]="medium.imageUrl" alt="Medium profile picture">
+        </div>
+        <mat-card-title>{{medium.name}}</mat-card-title>
+        <mat-card-subtitle>{{medium.talent}}</mat-card-subtitle>
+        <mat-card-content>{{medium.description}} </mat-card-content>
+
+
+        <mat-card-actions>
+          <div fxLayout.gt-md="row" fxLayoutAlign="space-between" fxLayout.lt-md="column">
+            <button mat-raised-button (click)="openModal(medium.id)">Details</button>
+            <button mat-raised-button color="primary" style="margin: 0;">Consulter</button>
+          </div>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+
+  </div>
+</div>

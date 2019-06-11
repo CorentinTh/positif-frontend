@@ -1,0 +1,70 @@
+@import "../variables.less";
+html {
+  height: 100%;
+}
+body {
+  min-height: 100%;
+}
+.sidenav-container {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.example-sidenav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.nav-separator {
+  /* This fills the remaining space, by using flexbox.
+     Every toolbar row uses a flexbox row layout. */
+  flex: 1 1 auto;
+}
+
+.nav {
+  a {
+    color: #ffffff;
+    text-decoration: none;
+    padding-right: 25px;
+    font-weight: 400;
+    font-size: 15px;
+  }
+
+  z-index: 3 !important;
+  position: relative;
+
+  .head {
+    font-weight: 500;
+    font-size: 20px;
+  }
+}
+
+
+mat-sidenav {
+  width: @sidebar-size;
+
+  a {
+
+    mat-icon {
+      margin-right: 25px;
+
+      width: 30px;
+      height: 30px;
+      font-size: 30px;
+      line-height: 30px;
+      color: @primary;
+    }
+
+
+  }
+
+
+  .active-list-item {
+    background-color: #e7e7e7;
+  }
+}

@@ -1,0 +1,62 @@
+
+<mat-toolbar class="mat-elevation-z3 nav" color="primary">
+<mat-toolbar-row>
+  <a routerLink="/" class="head" >Posit'IF</a>
+  <a routerLink="/about">A propos</a>
+
+  <span class="nav-separator"></span>
+
+  <button mat-icon-button routerLink="/profile" *ngIf="currentUser">
+    <mat-icon>person</mat-icon>
+  </button>
+  <button mat-icon-button (click)="logout()" *ngIf="currentUser">
+    <mat-icon>logout</mat-icon>
+  </button>
+
+  <a routerLink="/login" *ngIf="!currentUser">Connection</a>
+  <a routerLink="/register" *ngIf="!currentUser">Inscription</a>
+</mat-toolbar-row>
+</mat-toolbar>
+
+<router-outlet *ngIf="!currentUser"></router-outlet>
+
+<mat-sidenav-container class="sidenav-container" *ngIf="currentUser">
+  <mat-sidenav #drawer mode="side" opened role="navigation" class="mat-elevation-z2">
+
+    <mat-nav-list *ngIf="isUser">
+      <a mat-list-item routerLink='/mediums' routerLinkActive="active-list-item">
+        <mat-icon>record_voice_over</mat-icon>
+        Mediums
+      </a>
+      <a mat-list-item routerLink='/consultations' routerLinkActive="active-list-item">
+        <mat-icon>list</mat-icon>
+        Mes consultations
+      </a>
+    </mat-nav-list>
+
+    <mat-nav-list *ngIf="isAdmin">
+      <a mat-list-item routerLink='/clients' routerLinkActive="active-list-item">
+        <mat-icon>people</mat-icon>
+        Clients
+      </a>
+      <a mat-list-item routerLink='/stats' routerLinkActive="active-list-item">
+        <mat-icon>bar_chart</mat-icon>
+        Statistiques
+      </a>
+      <a mat-list-item routerLink='/consultations' routerLinkActive="active-list-item">
+        <mat-icon>list</mat-icon>
+        Mes consultations
+      </a>
+    </mat-nav-list>
+
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+<router-outlet name="modal"></router-outlet>
+
+
+
+<!--    <router-outlet></router-outlet>-->

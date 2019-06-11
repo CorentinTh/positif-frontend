@@ -1,0 +1,19 @@
+
+<div fxLayoutAlign="center">
+  <mat-spinner *ngIf="!medium"></mat-spinner>
+</div>
+
+<div *ngIf="medium">
+  <h1 mat-dialog-title>
+    {{medium.name}}
+  </h1>
+  <div mat-dialog-content>
+
+    {{medium.description}}
+
+  </div>
+
+  <div mat-dialog-actions>
+    <button mat-raised-button color="primary" >Demander une consultation</button>
+  </div>
+</div>

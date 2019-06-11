@@ -1,0 +1,28 @@
+<app-page-header>Mon profil</app-page-header>
+
+<div class="section-container profile-container">
+  <div fxLayoutAlign="center center">
+
+    <app-alert *ngIf="error">{{error}}</app-alert>
+
+    <mat-spinner *ngIf="!user && !error"></mat-spinner>
+
+    <div fxFlex="50"*ngIf="user" >
+      <mat-card >
+        <mat-card-header>
+          <h2>
+          Informations du profil
+          </h2>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+
+        <mat-card-content>
+          <mat-list>
+            <mat-list-item><strong>Nom: </strong> {{user.lastname}}</mat-list-item>
+            <mat-list-item><strong>Prénom: </strong>{{user.firstname}}</mat-list-item>
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
