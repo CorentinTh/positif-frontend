@@ -7,7 +7,7 @@ const users: User[] = [
     firstname: 'John',
     lastname: 'Doe',
     email: 'admin@positif.fr',
-    role: Role.Employee
+    role: Role.Employee,
   },
   {
     id: 2,
@@ -15,7 +15,7 @@ const users: User[] = [
     firstname: 'Bob',
     lastname: 'Dylan',
     email: 'user@positif.fr',
-    role: Role.Client
+    role: Role.Client,
   }
 ];
 

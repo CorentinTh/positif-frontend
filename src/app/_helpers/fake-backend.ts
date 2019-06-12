@@ -12,7 +12,7 @@ import {delay, mergeMap, materialize, dematerialize} from 'rxjs/operators';
 
 import {Medium, Role, User} from '../_models';
 
-import {mediums, users} from "../../assets/dummyData";
+import {mediums, users, clients} from "../../assets/dummyData";
 
 @Injectable()
 export class FakeBackendInterceptor implements HttpInterceptor {
@@ -61,6 +61,12 @@ export class FakeBackendInterceptor implements HttpInterceptor {
       if (request.url.endsWith('/users') && request.method === 'GET') {
         if (role !== Role.Employee) return unauthorised();
         return ok(users);
+      }
+
+      // get all clients (admin only)
+      if (request.url.endsWith('/clients') && request.method === 'GET') {
+        if (role !== Role.Employee) return unauthorised();
+        return ok(clients);
       }
 
       // get all users (admin only)

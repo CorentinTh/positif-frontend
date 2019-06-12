@@ -6,7 +6,4 @@ export class User {
   lastname: string;
   role: string;
   token?: string;
-  phone?: string;
-  address?: string;
-
 }

@@ -1,34 +1,22 @@
-import { Component, OnInit } from '@angular/core';
-import {Role} from "../_models";
+import {Component, OnInit, ViewEncapsulation} from '@angular/core';
+import {Role, User} from "../_models";
+import {ClientService} from "../_services/client.service";
 
 @Component({
   selector: 'app-clients',
   templateUrl: './clients.component.html',
-  styleUrls: ['./clients.component.less']
+  styleUrls: ['./clients.component.less'],
+  encapsulation: ViewEncapsulation.None
 })
 export class ClientsComponent implements OnInit {
 
-  displayedColumns: string[] = ['firstname'];
-  clients = [
-    {
-      id: 1,
-      password: 'admin',
-      firstname: 'John',
-      lastname: 'Doe',
-      email: 'admin@positif.fr',
-      role: Role.Employee
-    },
-    {
-      id: 2,
-      password: 'admin',
-      firstname: 'John',
-      lastname: 'Doe',
-      email: 'admin@positif.fr',
-      role: Role.Employee
-    }
-  ];
+  displayedColumns: string[] = ['firstname', 'lastname', 'phone'];
+  clients: User[];
+  searchQuery: String;
 
-  constructor() { }
+  constructor(public clientServices: ClientService) {
+    clientServices.getAll().subscribe(users => this.clients = users);
+  }
 
   ngOnInit() {
   }
