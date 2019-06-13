@@ -1,4 +1,4 @@
-export class User {
+export abstract class User {
   id: number;
   email: string;
   password: string;
@@ -6,4 +6,6 @@ export class User {
   lastname: string;
   role: string;
   token?: string;
+  gender: string;
+  birthDate: Date;
 }

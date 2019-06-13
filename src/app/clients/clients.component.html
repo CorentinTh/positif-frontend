@@ -26,12 +26,28 @@
 
             <ng-container matColumnDef="firstname">
               <th mat-header-cell *matHeaderCellDef>Prénom</th>
-              <td mat-cell *matCellDef="let element"> {{element.firstname}} </td>
+              <td mat-cell *matCellDef="let element"> {{element.firstname | capitalize}} </td>
             </ng-container>
 
             <ng-container matColumnDef="lastname">
               <th mat-header-cell *matHeaderCellDef>Nom</th>
-              <td mat-cell *matCellDef="let element"> {{element.lastname}} </td>
+              <td mat-cell *matCellDef="let element"> {{element.lastname | capitalize}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="gender">
+              <th mat-header-cell *matHeaderCellDef>Genre</th>
+              <td mat-cell *matCellDef="let element"> {{element.gender}} </td>
+            </ng-container>
+
+
+            <ng-container matColumnDef="email">
+              <th mat-header-cell *matHeaderCellDef>Email</th>
+              <td mat-cell *matCellDef="let element"> {{element.email}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="birthDate">
+              <th mat-header-cell *matHeaderCellDef>Date de naissance</th>
+              <td mat-cell *matCellDef="let element"> {{element.birthDate | date:'dd/MM/yyyy'}} </td>
             </ng-container>
 
             <ng-container matColumnDef="phone">
@@ -40,7 +56,7 @@
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" ></tr>
           </table>
         </div>
 
@@ -51,10 +67,20 @@
       <ng-template matTabContent>
         <div class="tab-wrapper">
 
-          <agm-map [latitude]="45.7659539" [longitude]="4.8555385" [zoom]="14" class="google-map">
-            <agm-marker *ngFor="let client of clients" [latitude]="client.address.lon" [longitude]="client.address.lat">
+          <div fxLayout="row">
+            <div fxFlex.gt-sm="25" fxFlex.lt-sm="100">
+              <mat-form-field>
+                <input matInput type="text" [(ngModel)]="searchQuery" placeholder="Rechercher">
+                <span matSuffix><mat-icon>search</mat-icon></span>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <agm-map [latitude]="45.7659539" [longitude]="4.8555385" [zoom]="14" class="google-map" [fitBounds]="true" >
+            <agm-marker *ngFor="let client of clients | filterBy:searchQuery:displayedColumns" [latitude]="client.address.lon" [longitude]="client.address.lat" [agmFitBounds]="true">
               <agm-info-window [isOpen]="true">
-                {{client.firstname}} {{client.lastname}}
+                {{client.firstname | capitalize}} {{client.lastname | capitalize}} <br>
+                <a [routerLink]="'/users/' + client.id">Voir son profil</a>
               </agm-info-window>
             </agm-marker>
           </agm-map>

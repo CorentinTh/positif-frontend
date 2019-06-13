@@ -5,7 +5,7 @@ import {HomeComponent} from "./home/home.component";
 import {MediumsComponent} from "./mediums/mediums.component";
 import {LoginComponent} from "./login/login.component";
 import {AuthGuard} from "./_guards/auth.guard";
-import {Role} from "./_models/role";
+import {Role} from "./_models/Role";
 import {PageNotFoundComponent} from "./page-not-found/page-not-found.component";
 import {ClientsComponent} from "./clients/clients.component";
 import {ProfileComponent} from "./profile/profile.component";

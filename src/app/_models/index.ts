@@ -1,6 +1,11 @@
-import {Role} from './role';
-import {User} from './user';
-import {Medium} from './medium';
-import {Client} from './client';
+import {Role} from './Role';
+import {User} from './User';
+import {Medium} from './Medium';
+import {Client} from './Client';
+import {Consultation} from './Consultation';
+import {ConsultationState} from './ConsultationState';
+import {Experience} from './Experience';
+import {Employee} from './Employee';
+import {Voice} from './Voice';
 
-export {Role, User, Medium, Client};
+export {Role, User, Medium, Client, Consultation, ConsultationState, Experience, Employee, Voice};

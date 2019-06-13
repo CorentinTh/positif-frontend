@@ -9,10 +9,10 @@ import {
 } from '@angular/common/http';
 import {Observable, of, throwError} from 'rxjs';
 import {delay, mergeMap, materialize, dematerialize} from 'rxjs/operators';
-
 import {Medium, Role, User} from '../_models';
+import {mediums, employees, clients} from "../../assets/dummyData";
 
-import {mediums, users, clients} from "../../assets/dummyData";
+const users : User [] = [...employees, ...clients];
 
 @Injectable()
 export class FakeBackendInterceptor implements HttpInterceptor {
@@ -30,7 +30,8 @@ export class FakeBackendInterceptor implements HttpInterceptor {
       // authenticate - public
       if (request.url.endsWith('/users/authenticate') && request.method === 'POST') {
         const user = users.find(x => x.email === request.body.email && x.password === request.body.password);
-        if (!user) return error('Username or password is incorrect');
+
+        if (!user) return error('Adresse email ou mot de passe incorrect.');
         return ok({
           id: user.id,
           email: user.email,
@@ -91,7 +92,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
       }
 
 
-        // pass through any requests not handled above
+      // pass through any requests not handled above
       return next.handle(request);
     }))
     // call materialize and dematerialize to ensure delay even if an error is thrown (https://github.com/Reactive-Extensions/RxJS/issues/648)

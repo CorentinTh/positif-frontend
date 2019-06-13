@@ -1,4 +1,4 @@
-import {User} from '.'
+import {User} from './User'
 
 export class Client extends User{
   phone: string;

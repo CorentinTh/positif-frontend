@@ -1,5 +1,5 @@
 import {mediums} from "./mediums";
-import {users} from "./users";
 import {clients} from "./clients";
+import {employees} from "./employees";
 
-export {mediums, users, clients};
+export {mediums, employees, clients};

@@ -23,6 +23,8 @@
 <mat-sidenav-container class="sidenav-container" *ngIf="currentUser">
   <mat-sidenav #drawer mode="side" opened role="navigation" class="mat-elevation-z2">
 
+    <img class="logo" src="../assets/images/logo-white.svg" alt="">
+    
     <mat-nav-list *ngIf="isUser">
       <a mat-list-item routerLink='/mediums' routerLinkActive="active-list-item">
         <mat-icon>record_voice_over</mat-icon>

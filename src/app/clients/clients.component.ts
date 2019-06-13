@@ -1,5 +1,5 @@
-import {Component, OnInit, ViewEncapsulation} from '@angular/core';
-import {Role, User} from "../_models";
+import {Component, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
+import {Client, Role, User} from "../_models";
 import {ClientService} from "../_services/client.service";
 
 @Component({
@@ -10,15 +10,18 @@ import {ClientService} from "../_services/client.service";
 })
 export class ClientsComponent implements OnInit {
 
-  displayedColumns: string[] = ['firstname', 'lastname', 'phone'];
-  clients: User[];
+  displayedColumns: string[] = ['firstname', 'lastname', 'gender', 'email', 'phone', 'birthDate'];
+  clients: Client[];
   searchQuery: String;
 
   constructor(public clientServices: ClientService) {
-    clientServices.getAll().subscribe(users => this.clients = users);
+    clientServices.getAll().subscribe(users => {
+      this.clients = users;
+    });
   }
 
   ngOnInit() {
   }
+
 
 }
