@@ -12,14 +12,17 @@ export class ProfileComponent implements OnInit {
 
   user: User;
   error: String;
+  isCurrent:boolean;
 
   constructor(public userService : UserService, public route: ActivatedRoute, public router: Router) {
 
     if (this.router.url.match(/\/users\/\d+$/)) {
+      this.isCurrent = false;
       this.route.paramMap.subscribe(p => {
         this.userService.getById(parseInt(p.get('id'))).subscribe(user => this.setUSer(user));
       });
     }else{
+      this.isCurrent = true;
       this.userService.getCurrent().subscribe(user => this.setUSer(user));
     }
   }

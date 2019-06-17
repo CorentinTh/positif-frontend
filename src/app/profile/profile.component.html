@@ -1,4 +1,5 @@
-<app-page-header>Mon profil</app-page-header>
+<app-page-header *ngIf="isCurrent">Mon profil</app-page-header>
+<app-page-header *ngIf="!isCurrent">Profil utilisateur</app-page-header>
 
 <div class="section-container profile-container">
   <div fxLayoutAlign="center center">
@@ -10,16 +11,19 @@
     <div fxFlex="50"*ngIf="user" >
       <mat-card >
         <mat-card-header>
-          <h2>
-          Informations du profil
+          <h2 *ngIf="isCurrent">
+            Mes informations
+          </h2>
+          <h2 *ngIf="!isCurrent">
+            Informations de {{user.lastname | capitalize}} {{user.firstname | capitalize}}
           </h2>
         </mat-card-header>
         <mat-divider></mat-divider>
 
         <mat-card-content>
           <mat-list>
-            <mat-list-item><strong>Nom: </strong> {{user.lastname}}</mat-list-item>
-            <mat-list-item><strong>Prénom: </strong>{{user.firstname}}</mat-list-item>
+            <mat-list-item><strong>Nom: </strong> {{user.lastname | capitalize}}</mat-list-item>
+            <mat-list-item><strong>Prénom: </strong>{{user.firstname | capitalize}}</mat-list-item>
           </mat-list>
         </mat-card-content>
       </mat-card>

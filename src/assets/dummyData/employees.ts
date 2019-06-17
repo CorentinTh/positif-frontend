@@ -31,7 +31,18 @@ import {Employee, Experience, Role, User, Voice} from "../../app/_models";
 
 
 const employees: Employee[] = [
-
+  {
+    id: 363,
+    password: 'admin',
+    firstname: 'Corentin',
+    lastname: 'Thomasset',
+    email: 'admin@positif.fr',
+    role: Role.Employee,
+    experience: Experience.JUNIOR,
+    voice: Voice.MASCULINE,
+    gender: 'F',
+    birthDate: new Date('1969-07-26T00:40:21Z')
+  },
   {
     id: 585,
     password: 'goofy',
@@ -619,18 +630,6 @@ const employees: Employee[] = [
     role: Role.Employee,
     gender: 'M',
     birthDate: new Date('1983-02-06T20:07:53Z')
-  },
-  {
-    id: 363,
-    password: 'admin',
-    firstname: 'Corentin',
-    lastname: 'Thomasset',
-    email: 'admin@positif.fr',
-    role: Role.Employee,
-    experience: Experience.JUNIOR,
-    voice: Voice.MASCULINE,
-    gender: 'F',
-    birthDate: new Date('1969-07-26T00:40:21Z')
   }
 ];
 

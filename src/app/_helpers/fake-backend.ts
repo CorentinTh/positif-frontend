@@ -10,9 +10,10 @@ import {
 import {Observable, of, throwError} from 'rxjs';
 import {delay, mergeMap, materialize, dematerialize} from 'rxjs/operators';
 import {Medium, Role, User} from '../_models';
-import {mediums, employees, clients} from "../../assets/dummyData";
+import {mediums, employees, clients, consultations} from "../../assets/dummyData";
 
-const users : User [] = [...employees, ...clients];
+const users: User [] = [...employees, ...clients];
+let currentUser: User;
 
 @Injectable()
 export class FakeBackendInterceptor implements HttpInterceptor {
@@ -91,6 +92,23 @@ export class FakeBackendInterceptor implements HttpInterceptor {
         return ok(mediums.find(m => m.id === id));
       }
 
+      if (request.url.match(/\/consultations\/client\/\d+$/) && request.method === 'GET') {
+        if (role !== Role.Client) return unauthorised();
+
+        let urlParts = request.url.split('/');
+        let id = parseInt(urlParts[urlParts.length - 1]);
+
+        return ok(consultations.filter(c => c.client.id === id));
+      }
+
+      if (request.url.match(/\/consultations\/employee\/\d+$/) && request.method === 'GET') {
+        if (role !== Role.Employee) return unauthorised();
+
+        let urlParts = request.url.split('/');
+        let id = parseInt(urlParts[urlParts.length - 1]);
+
+        return ok(consultations.filter(c => c.employee.id === id));
+      }
 
       // pass through any requests not handled above
       return next.handle(request);

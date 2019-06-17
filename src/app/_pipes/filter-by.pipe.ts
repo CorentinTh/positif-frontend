@@ -12,7 +12,7 @@ export class FilterByPipe implements PipeTransform {
 
     return arr.filter(o => {
       for (const key in o) {
-        if (o.hasOwnProperty(key) && (fields === undefined || fields.indexOf(key) != -1)) {
+        if (o.hasOwnProperty(key) && typeof o[key] === 'string' && (fields === undefined || fields.indexOf(key) != -1)) {
 
           if (this.normalize(o[key]).indexOf(value) != -1) return true;
         }
@@ -21,7 +21,8 @@ export class FilterByPipe implements PipeTransform {
     });
   }
 
-  private normalize(str:String){
+  private normalize(str:any){
+
     return str
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, "")

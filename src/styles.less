@@ -30,3 +30,37 @@ body {
     align-self: flex-end;
   }
 }
+
+
+.tab-wrapper {
+  padding: 25px;
+}
+
+
+.badge{
+  transition: box-shadow 280ms cubic-bezier(.4,0,.2,1);
+  padding: 7px 12px;
+  border-radius: 16px;
+  align-items: center;
+  cursor: default;
+  min-height: 32px;
+  height: 1px;
+
+
+
+  &.badge-grey{
+    background-color: #e0e0e0;
+    color: rgba(0,0,0,.87);
+  }
+
+  &.badge-primary{
+    background-color: @primary;
+    color: #fff;
+  }
+
+  &.badge-success{
+    background-color: @success;
+    color: #fff;
+  }
+
+}

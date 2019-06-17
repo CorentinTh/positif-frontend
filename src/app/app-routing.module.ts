@@ -10,6 +10,8 @@ import {PageNotFoundComponent} from "./page-not-found/page-not-found.component";
 import {ClientsComponent} from "./clients/clients.component";
 import {ProfileComponent} from "./profile/profile.component";
 import {RegisterComponent} from "./register/register.component";
+import {StatisticsComponent} from "./statistics/statistics.component";
+import {ConsultationsComponent} from "./consultations/consultations.component";
 
 const routes: Routes = [
   {
@@ -50,6 +52,12 @@ const routes: Routes = [
     data: {roles: [Role.Employee]}
   },
   {
+    path: 'stats',
+    component: StatisticsComponent,
+    canActivate: [AuthGuard],
+    data: {roles: [Role.Employee]}
+  },
+  {
     path: 'profile',
     component: ProfileComponent,
     canActivate: [AuthGuard],
@@ -60,6 +68,12 @@ const routes: Routes = [
     component: ProfileComponent,
     canActivate: [AuthGuard],
     data: {roles: [Role.Employee, Role.Client]} // TODO: change to Employee only
+  },
+  {
+    path: 'consultations',
+    component: ConsultationsComponent,
+    canActivate: [AuthGuard],
+    data: {roles: [Role.Employee, Role.Client]}
   },
   {
     path: '**',
