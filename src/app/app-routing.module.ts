@@ -17,7 +17,8 @@ const routes: Routes = [
   {
     path: '',
     component: HomeComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+    data: {roles: [Role.Employee, Role.Client]}
   },
   {
     path: 'about',
@@ -35,13 +36,13 @@ const routes: Routes = [
     path: 'mediums',
     component: MediumsComponent,
     canActivate: [AuthGuard],
-    data: {roles: [Role.Client]},
+    data: {roles: [Role.Employee, Role.Client]},
     children: [
       {
         path: ':id',
         component: MediumsComponent,
         canActivate: [AuthGuard],
-        data: {roles: [Role.Client]},
+        data: {roles: [Role.Employee, Role.Client]},
       }
     ]
   },
@@ -73,7 +74,21 @@ const routes: Routes = [
     path: 'consultations',
     component: ConsultationsComponent,
     canActivate: [AuthGuard],
-    data: {roles: [Role.Employee, Role.Client]}
+    data: {roles: [Role.Employee, Role.Client]},
+    children: [
+      {
+        path: ':id',
+        component: ConsultationsComponent,
+        canActivate: [AuthGuard],
+        data: {roles: [Role.Employee, Role.Client]},
+      },
+      {
+        path: 'user/:id',
+        component: ConsultationsComponent,
+        canActivate: [AuthGuard],
+        data: {roles: [Role.Employee]},
+      }
+    ]
   },
   {
     path: '**',

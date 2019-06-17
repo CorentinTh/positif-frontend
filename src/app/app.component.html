@@ -6,6 +6,7 @@
 
   <span class="nav-separator"></span>
 
+  <span class="nav-text" *ngIf="currentUser">{{currentUser.firstname}} {{currentUser.lastname}} {{isAdmin ? '(admin)' : ''}}</span>
   <button mat-icon-button routerLink="/profile" *ngIf="currentUser">
     <mat-icon>person</mat-icon>
   </button>

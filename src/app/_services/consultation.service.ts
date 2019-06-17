@@ -10,11 +10,15 @@ export class ConsultationService {
 
   constructor(private http: HttpClient) { }
 
-  getByClientId(id: number){
+  getAllByClientId(id: number){
     return this.http.get<Consultation[]>(`${environment.apiUrl}/consultations/client/${id}`);
   }
 
-  getByEmployeeId(id: number){
+  getAllByEmployeeId(id: number){
     return this.http.get<Consultation[]>(`${environment.apiUrl}/consultations/employee/${id}`);
+  }
+
+  getOneById(id: number){
+    return this.http.get<Consultation>(`${environment.apiUrl}/consultations/${id}`);
   }
 }

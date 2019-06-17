@@ -1,0 +1,91 @@
+<div fxLayoutAlign="center">
+  <mat-spinner *ngIf="!consultation"></mat-spinner>
+</div>
+
+
+<div *ngIf="consultation">
+  <h1 mat-dialog-title>
+    Consultation n°{{consultation.id}}
+  </h1>
+  <div mat-dialog-content>
+
+
+    <table>
+      <tr>
+        <td>
+          <strong>Etat de la consultation : </strong>
+        </td>
+        <td>
+          <span class="badge badge-success" *ngIf="consultation.state === 'PENDING'">En cours</span>
+          <span class="badge badge-primary" *ngIf="consultation.state === 'WAITING_VALIDATION'">En attente</span>
+          <span class="badge badge-grey" *ngIf="consultation.state === 'CLOSED'">Terminée</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <strong>Medium demandé : </strong>
+        </td>
+        <td>
+          <a [routerLink]="'mediums/' + consultation.medium.id">{{consultation.medium.name}}</a>
+        </td>
+      </tr>
+
+      <tr *ngIf="user.role === 'Employee'">
+        <td>
+          <strong>Client :</strong>
+        </td>
+        <td>
+          <a
+            [routerLink]="'users/' + consultation.client.id">{{consultation.client.firstname}} {{consultation.client.lastname}}</a>
+        </td>
+
+      </tr>
+
+      <tr *ngIf="user.role === 'Employee'">
+        <td>
+          <strong>Employé associé :</strong>
+        </td>
+        <td>
+          <a
+            [routerLink]="'users/' + consultation.employee.id">{{consultation.employee.firstname}} {{consultation.employee.lastname}}</a>
+        </td>
+
+      </tr>
+
+      <tr *ngIf="consultation.createdAt">
+        <td>
+          <strong>Créé le : </strong>
+        </td>
+        <td>
+          {{consultation.createdAt | date:'dd/MM/yyyy - hh:mm'}}
+        </td>
+      </tr>
+
+      <tr *ngIf="consultation.answeredAt">
+        <td>
+          <strong>Accepté le : </strong>
+        </td>
+        <td>
+          {{consultation.answeredAt | date:'dd/MM/yyyy - hh:mm'}}
+        </td>
+      </tr>
+
+      <tr *ngIf="consultation.closedAt">
+        <td>
+          <strong>Terminé le : </strong>
+        </td>
+        <td>
+          {{consultation.closedAt | date:'dd/MM/yyyy - hh:mm'}}
+        </td>
+      </tr>
+
+
+    </table>
+
+
+  </div>
+
+  <div mat-dialog-actions>
+    <button mat-stroked-button color="primary">Fermer</button>
+  </div>
+</div>

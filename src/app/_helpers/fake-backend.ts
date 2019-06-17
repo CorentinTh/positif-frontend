@@ -74,7 +74,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
       // get all users (admin only)
       if (request.url.endsWith('/users/current') && request.method === 'GET') {
         if (role !== Role.Employee && role !== Role.Client) return unauthorised();
-        return ok(users[0]);
+        return ok(role === Role.Employee ? employees[0] : clients[0]);
       }
 
       // get all mediums (admin and user only)
@@ -90,6 +90,16 @@ export class FakeBackendInterceptor implements HttpInterceptor {
         let id = parseInt(urlParts[urlParts.length - 1]);
 
         return ok(mediums.find(m => m.id === id));
+      }
+
+
+      if (request.url.match(/\/consultations\/\d+$/) && request.method === 'GET') {
+        if (role !== Role.Employee && role !== Role.Client) return unauthorised();
+
+        let urlParts = request.url.split('/');
+        let id = parseInt(urlParts[urlParts.length - 1]);
+
+        return ok(consultations.find(m => m.id === id));
       }
 
       if (request.url.match(/\/consultations\/client\/\d+$/) && request.method === 'GET') {

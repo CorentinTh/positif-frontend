@@ -12,6 +12,7 @@ const meEmployee = employees.find(x => x.lastname === 'Thomasset');
 
 const consultations: Consultation[] = [
   {
+    id:98754,
     client: meClient,
     employee: meEmployee,
     medium: randomMedium(),
@@ -21,6 +22,7 @@ const consultations: Consultation[] = [
     answeredAt: new Date(),
   },
   {
+    id:9854,
     client: meClient,
     employee: meEmployee,
     medium: randomMedium(),
@@ -29,6 +31,7 @@ const consultations: Consultation[] = [
     answeredAt: new Date(),
   },
   {
+    id:78554,
     client: meClient,
     employee: meEmployee,
     medium: randomMedium(),

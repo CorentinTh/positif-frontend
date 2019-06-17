@@ -28,6 +28,19 @@
       <td mat-cell *matCellDef="let element"><a [routerLink]="'/users/' + element.client.id">{{element.client.firstname | capitalize}} {{element.client.lastname | capitalize}} </a> </td>
     </ng-container>
 
+    <ng-container matColumnDef="medium">
+      <th mat-header-cell *matHeaderCellDef>Medium</th>
+      <td mat-cell *matCellDef="let element"><a [routerLink]="'/mediums/' + element.medium.id">{{element.medium.firstname}} {{element.medium.lastname}} </a> </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Client</th>
+      <td mat-cell *matCellDef="let element">
+        <button mat-stroked-button color="primary"(click)="openModal(element.id)"> Details</button>
+      </td>
+    </ng-container>
+
+
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns;" ></tr>
   </table>

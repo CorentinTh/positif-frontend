@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {User} from "../_models/User";
+import {User} from "../_models/";
 import {UserService} from "../_services/user.service";
 import {AuthenticationService} from "../_services/authentication.service";
 import {first} from "rxjs/operators";
@@ -18,13 +18,14 @@ export class HomeComponent implements OnInit {
     private authenticationService: AuthenticationService
   ) {
     this.currentUser = this.authenticationService.currentUserValue;
+
+    this.userService.getCurrent().pipe(first()).subscribe(user => {
+      this.userFromApi = user;
+    });
   }
 
   ngOnInit() {
-    this.userService.getById(this.currentUser.id).pipe(first()).subscribe(user => {
-      this.userFromApi = user;
 
-    });
   }
 
 }
