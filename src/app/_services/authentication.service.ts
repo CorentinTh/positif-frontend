@@ -5,6 +5,7 @@ import {map} from 'rxjs/operators';
 
 import {User} from '../_models';
 import {environment} from "../../environments/environment";
+import {Utils} from "../_helpers/utils";
 
 @Injectable({providedIn: 'root'})
 export class AuthenticationService {
@@ -21,27 +22,42 @@ export class AuthenticationService {
   }
 
   login(email: string, password: string) {
-    return this.http.post<any>(`${environment.apiUrl}/users/authenticate`, {email, password})
-      .pipe(map(user => {
+    return this.http.get<any>(`${environment.apiUrl}?do=login&` + Utils.serialize({email, password}))
+      .pipe(map(result => {
         // login successful if there's a jwt token in the response
-        if (user && user.token) {
-          // store user details and jwt token in local storage to keep user logged in between page refreshes
-          localStorage.setItem('currentUser', JSON.stringify(user));
-          this.currentUserSubject.next(user);
+        if (result && result.logged && result.user) {
+
+          localStorage.setItem('currentUser', JSON.stringify(result.user));
+          this.currentUserSubject.next(result.user);
         }
 
-        return user;
+        return result && result.logged ? result.user : false;
       }));
   }
 
-  register(user: Object){
-    return this.http.post<any>(`${environment.apiUrl}/users/register`, {user}); // TODO : check result
-
+  register(user: Object) {
+    return this.http.get<any>(`${environment.apiUrl}?do=register&` + Utils.serialize(user));
   }
 
   logout() {
     // remove user from local storage to log user out
-    localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
+    this.http.get<any>(`${environment.apiUrl}?do=logout`).subscribe((result) => {
+      console.log(result);
+      localStorage.removeItem('currentUser');
+      this.currentUserSubject.next(null);
+      location.reload(true);
+    })
   }
 }
+/*
+
+
+
+
+
+
+ */
+
+
+
+

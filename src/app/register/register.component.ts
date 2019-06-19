@@ -9,28 +9,32 @@ import {AuthenticationService} from "../_services/authentication.service";
   styleUrls: ['./register.component.less']
 })
 export class RegisterComponent implements OnInit {
-  firstFormGroup: FormGroup;
-  secondFormGroup: FormGroup;
-  thirdFormGroup: FormGroup;
+  infoFormGroup: FormGroup;
+  credentialsFormGroup: FormGroup;
+  locationFormGroup: FormGroup;
+  success : boolean;
 
   constructor(private formBuilder: FormBuilder, public authService: AuthenticationService) {
   }
 
   ngOnInit() {
-    this.firstFormGroup = this.formBuilder.group({
+    this.infoFormGroup = this.formBuilder.group({
       lastname: ['', Validators.required],
       firstname: ['', Validators.required],
+      birthDate: ['', Validators.required],
+      phone: ['', [Validators.required, Validators.pattern(/\d+/)]],
+      gender: ['', Validators.required],
+
+    });
+
+    this.credentialsFormGroup = this.formBuilder.group({
+      email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(4)]],
-      passwordConfirmed: ['', Validators.required]
+      passwordConfirmed: ['', Validators.required],
     }, {
       validator: MustMatch('password', 'passwordConfirmed')
     });
-
-    this.secondFormGroup = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/\d+/)]]
-    });
-    this.thirdFormGroup = this.formBuilder.group({
+    this.locationFormGroup = this.formBuilder.group({
       addressField1: ['', [Validators.required, Validators.pattern(/\d+/)]],
       addressField2: ['', Validators.required],
       addressField3: ['', [Validators.required, Validators.pattern(/\d+/)]],
@@ -40,17 +44,23 @@ export class RegisterComponent implements OnInit {
   }
 
   submit() {
-    if (this.firstFormGroup.invalid || this.secondFormGroup.invalid || this.thirdFormGroup.invalid) {
+
+    if (this.infoFormGroup.invalid || this.credentialsFormGroup.invalid || this.locationFormGroup.invalid) {
       console.log('form invalid');
     } else {
       this.authService.register({
-        lastname: this.firstFormGroup.controls.lastname.value,
-        firstname: this.firstFormGroup.controls.firstname.value,
-        password: this.firstFormGroup.controls.password.value,
-        email: this.secondFormGroup.controls.email.value,
-        phone: this.secondFormGroup.controls.phone.value,
-        address: [this.thirdFormGroup.controls.addressField1.value, this.thirdFormGroup.controls.addressField2.value, this.thirdFormGroup.controls.addressField3.value, this.thirdFormGroup.controls.addressField4.value].join(' ')
-      });
+        gender: this.infoFormGroup.controls.gender.value,
+        birthDate: new Date(this.infoFormGroup.controls.birthDate.value).toISOString(),
+        lastname: this.infoFormGroup.controls.lastname.value,
+        firstname: this.infoFormGroup.controls.firstname.value,
+        password: this.credentialsFormGroup.controls.password.value,
+        passwordConfirmed: this.credentialsFormGroup.controls.passwordConfirmed.value,
+        email: this.credentialsFormGroup.controls.email.value,
+        phoneNumber: this.infoFormGroup.controls.phone.value,
+        address: [this.locationFormGroup.controls.addressField1.value, this.locationFormGroup.controls.addressField2.value, this.locationFormGroup.controls.addressField3.value, this.locationFormGroup.controls.addressField4.value].join(' ')
+      }).subscribe(result => {
+          this.success = result && result.status;
+      })
     }
   }
 }

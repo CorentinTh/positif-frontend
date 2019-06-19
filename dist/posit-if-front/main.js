@@ -582,12 +582,14 @@ var AuthGuard = /** @class */ (function () {
             // check if route is restricted by role
             if (route.data.roles && route.data.roles.indexOf(currentUser.role) === -1) {
                 // role not authorised so redirect to home page
-                this.router.navigate(['/']);
+                console.log("Incorrect role.");
+                this.router.navigate(['/login']);
                 return false;
             }
             // authorised so return true
             return true;
         }
+        console.log("Not logged in");
         // not logged in so redirect to login page with the return url
         this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
         return false;
@@ -634,7 +636,7 @@ var ErrorInterceptor = /** @class */ (function () {
             if ([401, 403].indexOf(err.status) !== -1) {
                 // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
                 _this.authenticationService.logout();
-                location.reload(true);
+                // location.reload(true);
             }
             var error = err.error ? err.error.message || err.statusText : err;
             return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["throwError"])(error);
@@ -647,150 +649,6 @@ var ErrorInterceptor = /** @class */ (function () {
     return ErrorInterceptor;
 }());
 
-
-
-/***/ }),
-
-/***/ "./src/app/_helpers/fake-backend.ts":
-/*!******************************************!*\
-  !*** ./src/app/_helpers/fake-backend.ts ***!
-  \******************************************/
-/*! exports provided: FakeBackendInterceptor, fakeBackendProvider */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FakeBackendInterceptor", function() { return FakeBackendInterceptor; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fakeBackendProvider", function() { return fakeBackendProvider; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
-/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
-/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js");
-/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm5/operators/index.js");
-/* harmony import */ var _models__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../_models */ "./src/app/_models/index.ts");
-/* harmony import */ var _assets_dummyData__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../assets/dummyData */ "./src/assets/dummyData/index.ts");
-
-
-
-
-
-
-
-var users = _assets_dummyData__WEBPACK_IMPORTED_MODULE_6__["employees"].concat(_assets_dummyData__WEBPACK_IMPORTED_MODULE_6__["clients"]);
-var currentUser;
-var FakeBackendInterceptor = /** @class */ (function () {
-    function FakeBackendInterceptor() {
-    }
-    FakeBackendInterceptor.prototype.intercept = function (request, next) {
-        var authHeader = request.headers.get('Authorization');
-        var isLoggedIn = authHeader && authHeader.startsWith('Bearer fake-jwt-token');
-        var roleString = isLoggedIn && authHeader.split('.')[1];
-        var role = roleString ? _models__WEBPACK_IMPORTED_MODULE_5__["Role"][roleString] : null;
-        // wrap in delayed observable to simulate server api call
-        return Object(rxjs__WEBPACK_IMPORTED_MODULE_3__["of"])(null).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["mergeMap"])(function () {
-            // authenticate - public
-            if (request.url.endsWith('/users/authenticate') && request.method === 'POST') {
-                var user = users.find(function (x) { return x.email === request.body.email && x.password === request.body.password; });
-                if (!user)
-                    return error('Adresse email ou mot de passe incorrect.');
-                return ok({
-                    id: user.id,
-                    email: user.email,
-                    firstname: user.firstname,
-                    lastname: user.lastname,
-                    role: user.role,
-                    token: "fake-jwt-token." + user.role
-                });
-            }
-            // get user by id - admin or user (user can only access their own record)
-            if (request.url.match(/\/users\/\d+$/) && request.method === 'GET') {
-                if (!isLoggedIn)
-                    return unauthorised();
-                // get id from request url
-                var urlParts = request.url.split('/');
-                var id_1 = parseInt(urlParts[urlParts.length - 1]);
-                // only allow normal users access to their own record
-                var currentUser_1 = users.find(function (x) { return x.role === role; });
-                if (id_1 !== currentUser_1.id && role !== _models__WEBPACK_IMPORTED_MODULE_5__["Role"].Employee)
-                    return unauthorised();
-                var user = users.find(function (x) { return x.id === id_1; });
-                return ok(user);
-            }
-            // get all users (admin only)
-            if (request.url.endsWith('/users') && request.method === 'GET') {
-                if (role !== _models__WEBPACK_IMPORTED_MODULE_5__["Role"].Employee)
-                    return unauthorised();
-                return ok(users);
-            }
-            // get all clients (admin only)
-            if (request.url.endsWith('/clients') && request.method === 'GET') {
-                if (role !== _models__WEBPACK_IMPORTED_MODULE_5__["Role"].Employee)
-                    return unauthorised();
-                return ok(_assets_dummyData__WEBPACK_IMPORTED_MODULE_6__["clients"]);
-            }
-            // get all users (admin only)
-            if (request.url.endsWith('/users/current') && request.method === 'GET') {
-                if (role !== _models__WEBPACK_IMPORTED_MODULE_5__["Role"].Employee && role !== _models__WEBPACK_IMPORTED_MODULE_5__["Role"].Client)
-                    return unauthorised();
-                return ok(users[0]);
-            }
-            // get all mediums (admin and user only)
-            if (request.url.endsWith('/mediums') && request.method === 'GET') {
-                if (role !== _models__WEBPACK_IMPORTED_MODULE_5__["Role"].Employee && role !== _models__WEBPACK_IMPORTED_MODULE_5__["Role"].Client)
-                    return unauthorised();
-                return ok(_assets_dummyData__WEBPACK_IMPORTED_MODULE_6__["mediums"]);
-            }
-            if (request.url.match(/\/mediums\/\d+$/) && request.method === 'GET') {
-                if (role !== _models__WEBPACK_IMPORTED_MODULE_5__["Role"].Employee && role !== _models__WEBPACK_IMPORTED_MODULE_5__["Role"].Client)
-                    return unauthorised();
-                var urlParts = request.url.split('/');
-                var id_2 = parseInt(urlParts[urlParts.length - 1]);
-                return ok(_assets_dummyData__WEBPACK_IMPORTED_MODULE_6__["mediums"].find(function (m) { return m.id === id_2; }));
-            }
-            if (request.url.match(/\/consultations\/client\/\d+$/) && request.method === 'GET') {
-                if (role !== _models__WEBPACK_IMPORTED_MODULE_5__["Role"].Client)
-                    return unauthorised();
-                var urlParts = request.url.split('/');
-                var id_3 = parseInt(urlParts[urlParts.length - 1]);
-                return ok(_assets_dummyData__WEBPACK_IMPORTED_MODULE_6__["consultations"].filter(function (c) { return c.client.id === id_3; }));
-            }
-            if (request.url.match(/\/consultations\/employee\/\d+$/) && request.method === 'GET') {
-                if (role !== _models__WEBPACK_IMPORTED_MODULE_5__["Role"].Employee)
-                    return unauthorised();
-                var urlParts = request.url.split('/');
-                var id_4 = parseInt(urlParts[urlParts.length - 1]);
-                return ok(_assets_dummyData__WEBPACK_IMPORTED_MODULE_6__["consultations"].filter(function (c) { return c.employee.id === id_4; }));
-            }
-            // pass through any requests not handled above
-            return next.handle(request);
-        }))
-            // call materialize and dematerialize to ensure delay even if an error is thrown (https://github.com/Reactive-Extensions/RxJS/issues/648)
-            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["materialize"])())
-            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["delay"])(500))
-            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["dematerialize"])());
-        // private helper functions
-        function ok(body) {
-            return Object(rxjs__WEBPACK_IMPORTED_MODULE_3__["of"])(new _angular_common_http__WEBPACK_IMPORTED_MODULE_2__["HttpResponse"]({ status: 200, body: body }));
-        }
-        function unauthorised() {
-            return Object(rxjs__WEBPACK_IMPORTED_MODULE_3__["throwError"])({ status: 401, error: { message: 'Unauthorised' } });
-        }
-        function error(message) {
-            return Object(rxjs__WEBPACK_IMPORTED_MODULE_3__["throwError"])({ status: 400, error: { message: message } });
-        }
-    };
-    FakeBackendInterceptor = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
-        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])()
-    ], FakeBackendInterceptor);
-    return FakeBackendInterceptor;
-}());
-
-var fakeBackendProvider = {
-    // use fake backend in place of Http service for backend-less development
-    provide: _angular_common_http__WEBPACK_IMPORTED_MODULE_2__["HTTP_INTERCEPTORS"],
-    useClass: FakeBackendInterceptor,
-    multi: true
-};
 
 
 /***/ }),
@@ -866,6 +724,34 @@ function MustMatch(controlName, matchingControlName) {
         }
     };
 }
+
+
+/***/ }),
+
+/***/ "./src/app/_helpers/utils.ts":
+/*!***********************************!*\
+  !*** ./src/app/_helpers/utils.ts ***!
+  \***********************************/
+/*! exports provided: Utils */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Utils", function() { return Utils; });
+var Utils = /** @class */ (function () {
+    function Utils() {
+    }
+    Utils.serialize = function (o) {
+        var str = [];
+        for (var p in o)
+            if (o.hasOwnProperty(p)) {
+                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(o[p]));
+            }
+        return str.join("&");
+    };
+    return Utils;
+}());
+
 
 
 /***/ }),
@@ -1324,6 +1210,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js");
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm5/operators/index.js");
 /* harmony import */ var _environments_environment__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../environments/environment */ "./src/environments/environment.ts");
+/* harmony import */ var _helpers_utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../_helpers/utils */ "./src/app/_helpers/utils.ts");
+
 
 
 
@@ -1345,19 +1233,20 @@ var AuthenticationService = /** @class */ (function () {
     });
     AuthenticationService.prototype.login = function (email, password) {
         var _this = this;
-        return this.http.post(_environments_environment__WEBPACK_IMPORTED_MODULE_5__["environment"].apiUrl + "/users/authenticate", { email: email, password: password })
-            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["map"])(function (user) {
+        return this.http.get(_environments_environment__WEBPACK_IMPORTED_MODULE_5__["environment"].apiUrl + "?do=login&" + _helpers_utils__WEBPACK_IMPORTED_MODULE_6__["Utils"].serialize({ email: email, password: password }))
+            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["map"])(function (result) {
             // login successful if there's a jwt token in the response
-            if (user && user.token) {
-                // store user details and jwt token in local storage to keep user logged in between page refreshes
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                _this.currentUserSubject.next(user);
+            if (result && result.logged && result.user) {
+                localStorage.setItem('currentUser', JSON.stringify(result.user));
+                _this.currentUserSubject.next(result.user);
             }
-            return user;
+            return result.user;
         }));
     };
     AuthenticationService.prototype.register = function (user) {
-        return this.http.post(_environments_environment__WEBPACK_IMPORTED_MODULE_5__["environment"].apiUrl + "/users/register", { user: user }); // TODO : check result
+        console.log(user);
+        // TODO : check result
+        return this.http.get(_environments_environment__WEBPACK_IMPORTED_MODULE_5__["environment"].apiUrl + "?do=register&" + _helpers_utils__WEBPACK_IMPORTED_MODULE_6__["Utils"].serialize(user)).subscribe(function (d) { return console.log('register results', d); });
     };
     AuthenticationService.prototype.logout = function () {
         // remove user from local storage to log user out
@@ -1389,6 +1278,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
 /* harmony import */ var _environments_environment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../environments/environment */ "./src/environments/environment.ts");
 /* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
+/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm5/operators/index.js");
+
 
 
 
@@ -1398,7 +1289,14 @@ var ClientService = /** @class */ (function () {
         this.http = http;
     }
     ClientService.prototype.getAll = function () {
-        return this.http.get(_environments_environment__WEBPACK_IMPORTED_MODULE_2__["environment"].apiUrl + "/clients");
+        return this.http.get(_environments_environment__WEBPACK_IMPORTED_MODULE_2__["environment"].apiUrl + "?do=listClients").pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["map"])(function (result) {
+            if (result.clients) {
+                return result.clients;
+            }
+            else {
+                console.log('Error while fetching clients');
+            }
+        }));
     };
     ClientService = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])({
@@ -1435,11 +1333,14 @@ var ConsultationService = /** @class */ (function () {
     function ConsultationService(http) {
         this.http = http;
     }
-    ConsultationService.prototype.getByClientId = function (id) {
+    ConsultationService.prototype.getAllByClientId = function (id) {
         return this.http.get(_environments_environment__WEBPACK_IMPORTED_MODULE_2__["environment"].apiUrl + "/consultations/client/" + id);
     };
-    ConsultationService.prototype.getByEmployeeId = function (id) {
+    ConsultationService.prototype.getAllByEmployeeId = function (id) {
         return this.http.get(_environments_environment__WEBPACK_IMPORTED_MODULE_2__["environment"].apiUrl + "/consultations/employee/" + id);
+    };
+    ConsultationService.prototype.getOneById = function (id) {
+        return this.http.get(_environments_environment__WEBPACK_IMPORTED_MODULE_2__["environment"].apiUrl + "/consultations/" + id);
     };
     ConsultationService = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])({
@@ -1569,6 +1470,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
 /* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
 /* harmony import */ var _environments_environment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../environments/environment */ "./src/environments/environment.ts");
+/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm5/operators/index.js");
+
 
 
 
@@ -1584,7 +1487,10 @@ var UserService = /** @class */ (function () {
         return this.http.get(_environments_environment__WEBPACK_IMPORTED_MODULE_3__["environment"].apiUrl + "/users/" + id);
     };
     UserService.prototype.getCurrent = function () {
-        return this.http.get(_environments_environment__WEBPACK_IMPORTED_MODULE_3__["environment"].apiUrl + "/users/current");
+        return this.http.get(_environments_environment__WEBPACK_IMPORTED_MODULE_3__["environment"].apiUrl + "?do=getCurrentUser").pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["map"])(function (result) {
+            console.log(result);
+            return result;
+        }));
     };
     UserService = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])({ providedIn: 'root' }),
@@ -1753,7 +1659,8 @@ var routes = [
     {
         path: '',
         component: _home_home_component__WEBPACK_IMPORTED_MODULE_4__["HomeComponent"],
-        canActivate: [_guards_auth_guard__WEBPACK_IMPORTED_MODULE_7__["AuthGuard"]]
+        canActivate: [_guards_auth_guard__WEBPACK_IMPORTED_MODULE_7__["AuthGuard"]],
+        data: { roles: [_models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Employee, _models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Client] }
     },
     {
         path: 'about',
@@ -1771,13 +1678,13 @@ var routes = [
         path: 'mediums',
         component: _mediums_mediums_component__WEBPACK_IMPORTED_MODULE_5__["MediumsComponent"],
         canActivate: [_guards_auth_guard__WEBPACK_IMPORTED_MODULE_7__["AuthGuard"]],
-        data: { roles: [_models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Client] },
+        data: { roles: [_models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Employee, _models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Client] },
         children: [
             {
                 path: ':id',
                 component: _mediums_mediums_component__WEBPACK_IMPORTED_MODULE_5__["MediumsComponent"],
                 canActivate: [_guards_auth_guard__WEBPACK_IMPORTED_MODULE_7__["AuthGuard"]],
-                data: { roles: [_models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Client] },
+                data: { roles: [_models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Employee, _models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Client] },
             }
         ]
     },
@@ -1809,7 +1716,21 @@ var routes = [
         path: 'consultations',
         component: _consultations_consultations_component__WEBPACK_IMPORTED_MODULE_14__["ConsultationsComponent"],
         canActivate: [_guards_auth_guard__WEBPACK_IMPORTED_MODULE_7__["AuthGuard"]],
-        data: { roles: [_models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Employee, _models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Client] }
+        data: { roles: [_models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Employee, _models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Client] },
+        children: [
+            {
+                path: ':id',
+                component: _consultations_consultations_component__WEBPACK_IMPORTED_MODULE_14__["ConsultationsComponent"],
+                canActivate: [_guards_auth_guard__WEBPACK_IMPORTED_MODULE_7__["AuthGuard"]],
+                data: { roles: [_models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Employee, _models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Client] },
+            },
+            {
+                path: 'user/:id',
+                component: _consultations_consultations_component__WEBPACK_IMPORTED_MODULE_14__["ConsultationsComponent"],
+                canActivate: [_guards_auth_guard__WEBPACK_IMPORTED_MODULE_7__["AuthGuard"]],
+                data: { roles: [_models_Role__WEBPACK_IMPORTED_MODULE_8__["Role"].Employee] },
+            }
+        ]
     },
     {
         path: '**',
@@ -1839,7 +1760,7 @@ var AppRoutingModule = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "\n<mat-toolbar class=\"mat-elevation-z3 nav\" color=\"primary\">\n<mat-toolbar-row>\n  <a routerLink=\"/\" class=\"head\" >Posit'IF</a>\n  <a routerLink=\"/about\">A propos</a>\n\n  <span class=\"nav-separator\"></span>\n\n  <button mat-icon-button routerLink=\"/profile\" *ngIf=\"currentUser\">\n    <mat-icon>person</mat-icon>\n  </button>\n  <button mat-icon-button (click)=\"logout()\" *ngIf=\"currentUser\">\n    <mat-icon>logout</mat-icon>\n  </button>\n\n  <a routerLink=\"/login\" *ngIf=\"!currentUser\">Connection</a>\n  <a routerLink=\"/register\" *ngIf=\"!currentUser\">Inscription</a>\n</mat-toolbar-row>\n</mat-toolbar>\n\n<router-outlet *ngIf=\"!currentUser\"></router-outlet>\n\n<mat-sidenav-container class=\"sidenav-container\" *ngIf=\"currentUser\">\n  <mat-sidenav #drawer mode=\"side\" opened role=\"navigation\" class=\"mat-elevation-z2\">\n\n    <img class=\"logo\" src=\"../assets/images/logo-white.svg\" alt=\"\">\n    \n    <mat-nav-list *ngIf=\"isUser\">\n      <a mat-list-item routerLink='/mediums' routerLinkActive=\"active-list-item\">\n        <mat-icon>record_voice_over</mat-icon>\n        Mediums\n      </a>\n      <a mat-list-item routerLink='/consultations' routerLinkActive=\"active-list-item\">\n        <mat-icon>list</mat-icon>\n        Mes consultations\n      </a>\n    </mat-nav-list>\n\n    <mat-nav-list *ngIf=\"isAdmin\">\n      <a mat-list-item routerLink='/clients' routerLinkActive=\"active-list-item\">\n        <mat-icon>people</mat-icon>\n        Clients\n      </a>\n      <a mat-list-item routerLink='/stats' routerLinkActive=\"active-list-item\">\n        <mat-icon>bar_chart</mat-icon>\n        Statistiques\n      </a>\n      <a mat-list-item routerLink='/consultations' routerLinkActive=\"active-list-item\">\n        <mat-icon>list</mat-icon>\n        Mes consultations\n      </a>\n    </mat-nav-list>\n\n  </mat-sidenav>\n  <mat-sidenav-content>\n    <router-outlet></router-outlet>\n  </mat-sidenav-content>\n</mat-sidenav-container>\n\n<router-outlet name=\"modal\"></router-outlet>\n\n\n\n<!--    <router-outlet></router-outlet>-->\n"
+module.exports = "\n<mat-toolbar class=\"mat-elevation-z3 nav\" color=\"primary\">\n<mat-toolbar-row>\n  <a routerLink=\"/\" class=\"head\" >Posit'IF</a>\n  <a routerLink=\"/about\">A propos</a>\n\n  <span class=\"nav-separator\"></span>\n\n  <span class=\"nav-text\" *ngIf=\"currentUser\">{{currentUser.firstname}} {{currentUser.lastname}} {{isAdmin ? '(admin)' : ''}}</span>\n  <button mat-icon-button routerLink=\"/profile\" *ngIf=\"currentUser\">\n    <mat-icon>person</mat-icon>\n  </button>\n  <button mat-icon-button (click)=\"logout()\" *ngIf=\"currentUser\">\n    <mat-icon>logout</mat-icon>\n  </button>\n\n  <a routerLink=\"/login\" *ngIf=\"!currentUser\">Connection</a>\n  <a routerLink=\"/register\" *ngIf=\"!currentUser\">Inscription</a>\n</mat-toolbar-row>\n</mat-toolbar>\n\n<router-outlet *ngIf=\"!currentUser\"></router-outlet>\n\n<mat-sidenav-container class=\"sidenav-container\" *ngIf=\"currentUser\">\n  <mat-sidenav #drawer mode=\"side\" opened role=\"navigation\" class=\"mat-elevation-z2\">\n\n    <img class=\"logo\" src=\"../assets/images/logo-white.svg\" alt=\"\">\n    \n    <mat-nav-list *ngIf=\"isUser\">\n      <a mat-list-item routerLink='/mediums' routerLinkActive=\"active-list-item\">\n        <mat-icon>record_voice_over</mat-icon>\n        Mediums\n      </a>\n      <a mat-list-item routerLink='/consultations' routerLinkActive=\"active-list-item\">\n        <mat-icon>list</mat-icon>\n        Mes consultations\n      </a>\n    </mat-nav-list>\n\n    <mat-nav-list *ngIf=\"isAdmin\">\n      <a mat-list-item routerLink='/clients' routerLinkActive=\"active-list-item\">\n        <mat-icon>people</mat-icon>\n        Clients\n      </a>\n      <a mat-list-item routerLink='/stats' routerLinkActive=\"active-list-item\">\n        <mat-icon>bar_chart</mat-icon>\n        Statistiques\n      </a>\n      <a mat-list-item routerLink='/consultations' routerLinkActive=\"active-list-item\">\n        <mat-icon>list</mat-icon>\n        Mes consultations\n      </a>\n    </mat-nav-list>\n\n  </mat-sidenav>\n  <mat-sidenav-content>\n    <router-outlet></router-outlet>\n  </mat-sidenav-content>\n</mat-sidenav-container>\n\n<router-outlet name=\"modal\"></router-outlet>\n\n\n\n<!--    <router-outlet></router-outlet>-->\n"
 
 /***/ }),
 
@@ -1850,7 +1771,7 @@ module.exports = "\n<mat-toolbar class=\"mat-elevation-z3 nav\" color=\"primary\
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "html {\n  height: 100%;\n}\nbody {\n  min-height: 100%;\n}\n.sidenav-container {\n  position: absolute;\n  top: 60px;\n  left: 0;\n  right: 0;\n  bottom: 0;\n}\n.sidenav-container img.logo {\n  display: block;\n  width: 30%;\n  margin: 30px auto;\n}\n.example-sidenav {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.nav-separator {\n  /* This fills the remaining space, by using flexbox.\n     Every toolbar row uses a flexbox row layout. */\n  flex: 1 1 auto;\n}\n.nav {\n  z-index: 3 !important;\n  position: relative;\n}\n.nav a {\n  color: #ffffff;\n  text-decoration: none;\n  padding-right: 25px;\n  font-weight: 400;\n  font-size: 15px;\n}\n.nav .head {\n  font-weight: 500;\n  font-size: 20px;\n}\nmat-sidenav {\n  width: 250px;\n}\nmat-sidenav a mat-icon {\n  margin-right: 25px;\n  width: 30px;\n  height: 30px;\n  font-size: 30px;\n  line-height: 30px;\n  color: #673ab7;\n}\nmat-sidenav .active-list-item {\n  background-color: #e7e7e7;\n}\n\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvQzovVXNlcnMvY3Rob21hc3NldC9XZWJzdG9ybVByb2plY3RzL3Bvc2l0LWlmLWZyb250L3NyYy9hcHAvYXBwLmNvbXBvbmVudC5sZXNzIiwic3JjL2FwcC9hcHAuY29tcG9uZW50Lmxlc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQ0E7RUFDRSxZQUFBO0FDQUY7QURFQTtFQUNFLGdCQUFBO0FDQUY7QURFQTtFQUNFLGtCQUFBO0VBQ0EsU0FBQTtFQUNBLE9BQUE7RUFDQSxRQUFBO0VBQ0EsU0FBQTtBQ0FGO0FETEE7RUFRSSxjQUFBO0VBQ0EsVUFBQTtFQUNBLGlCQUFBO0FDQUo7QURJQTtFQUNFLGFBQUE7RUFDQSxtQkFBQTtFQUNBLHVCQUFBO0FDRkY7QURNQTtFQ0pFO21EQUNpRDtFRE1qRCxjQUFBO0FDSkY7QURPQTtFQVNFLHFCQUFBO0VBQ0Esa0JBQUE7QUNiRjtBREdBO0VBRUksY0FBQTtFQUNBLHFCQUFBO0VBQ0EsbUJBQUE7RUFDQSxnQkFBQTtFQUNBLGVBQUE7QUNGSjtBREpBO0VBYUksZ0JBQUE7RUFDQSxlQUFBO0FDTko7QURXQTtFQUNFLFlBQUE7QUNURjtBRFFBO0VBTU0sa0JBQUE7RUFFQSxXQUFBO0VBQ0EsWUFBQTtFQUNBLGVBQUE7RUFDQSxpQkFBQTtFQUNBLGNBQUE7QUNaTjtBREFBO0VBb0JJLHlCQUFBO0FDakJKIiwiZmlsZSI6InNyYy9hcHAvYXBwLmNvbXBvbmVudC5sZXNzIiwic291cmNlc0NvbnRlbnQiOlsiQGltcG9ydCBcIi4uL3ZhcmlhYmxlcy5sZXNzXCI7XG5odG1sIHtcbiAgaGVpZ2h0OiAxMDAlO1xufVxuYm9keSB7XG4gIG1pbi1oZWlnaHQ6IDEwMCU7XG59XG4uc2lkZW5hdi1jb250YWluZXIge1xuICBwb3NpdGlvbjogYWJzb2x1dGU7XG4gIHRvcDogNjBweDtcbiAgbGVmdDogMDtcbiAgcmlnaHQ6IDA7XG4gIGJvdHRvbTogMDtcblxuICBpbWcubG9nb3tcbiAgICBkaXNwbGF5OiBibG9jaztcbiAgICB3aWR0aDogMzAlO1xuICAgIG1hcmdpbjogMzBweCBhdXRvO1xuICB9XG59XG5cbi5leGFtcGxlLXNpZGVuYXYge1xuICBkaXNwbGF5OiBmbGV4O1xuICBhbGlnbi1pdGVtczogY2VudGVyO1xuICBqdXN0aWZ5LWNvbnRlbnQ6IGNlbnRlcjtcbn1cblxuXG4ubmF2LXNlcGFyYXRvciB7XG4gIC8qIFRoaXMgZmlsbHMgdGhlIHJlbWFpbmluZyBzcGFjZSwgYnkgdXNpbmcgZmxleGJveC5cbiAgICAgRXZlcnkgdG9vbGJhciByb3cgdXNlcyBhIGZsZXhib3ggcm93IGxheW91dC4gKi9cbiAgZmxleDogMSAxIGF1dG87XG59XG5cbi5uYXYge1xuICBhIHtcbiAgICBjb2xvcjogI2ZmZmZmZjtcbiAgICB0ZXh0LWRlY29yYXRpb246IG5vbmU7XG4gICAgcGFkZGluZy1yaWdodDogMjVweDtcbiAgICBmb250LXdlaWdodDogNDAwO1xuICAgIGZvbnQtc2l6ZTogMTVweDtcbiAgfVxuXG4gIHotaW5kZXg6IDMgIWltcG9ydGFudDtcbiAgcG9zaXRpb246IHJlbGF0aXZlO1xuXG4gIC5oZWFkIHtcbiAgICBmb250LXdlaWdodDogNTAwO1xuICAgIGZvbnQtc2l6ZTogMjBweDtcbiAgfVxufVxuXG5cbm1hdC1zaWRlbmF2IHtcbiAgd2lkdGg6IEBzaWRlYmFyLXNpemU7XG5cbiAgYSB7XG5cbiAgICBtYXQtaWNvbiB7XG4gICAgICBtYXJnaW4tcmlnaHQ6IDI1cHg7XG5cbiAgICAgIHdpZHRoOiAzMHB4O1xuICAgICAgaGVpZ2h0OiAzMHB4O1xuICAgICAgZm9udC1zaXplOiAzMHB4O1xuICAgICAgbGluZS1oZWlnaHQ6IDMwcHg7XG4gICAgICBjb2xvcjogQHByaW1hcnk7XG4gICAgfVxuXG5cbiAgfVxuXG5cbiAgLmFjdGl2ZS1saXN0LWl0ZW0ge1xuICAgIGJhY2tncm91bmQtY29sb3I6ICNlN2U3ZTc7XG4gIH1cbn1cbiIsImh0bWwge1xuICBoZWlnaHQ6IDEwMCU7XG59XG5ib2R5IHtcbiAgbWluLWhlaWdodDogMTAwJTtcbn1cbi5zaWRlbmF2LWNvbnRhaW5lciB7XG4gIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgdG9wOiA2MHB4O1xuICBsZWZ0OiAwO1xuICByaWdodDogMDtcbiAgYm90dG9tOiAwO1xufVxuLnNpZGVuYXYtY29udGFpbmVyIGltZy5sb2dvIHtcbiAgZGlzcGxheTogYmxvY2s7XG4gIHdpZHRoOiAzMCU7XG4gIG1hcmdpbjogMzBweCBhdXRvO1xufVxuLmV4YW1wbGUtc2lkZW5hdiB7XG4gIGRpc3BsYXk6IGZsZXg7XG4gIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG4gIGp1c3RpZnktY29udGVudDogY2VudGVyO1xufVxuLm5hdi1zZXBhcmF0b3Ige1xuICAvKiBUaGlzIGZpbGxzIHRoZSByZW1haW5pbmcgc3BhY2UsIGJ5IHVzaW5nIGZsZXhib3guXG4gICAgIEV2ZXJ5IHRvb2xiYXIgcm93IHVzZXMgYSBmbGV4Ym94IHJvdyBsYXlvdXQuICovXG4gIGZsZXg6IDEgMSBhdXRvO1xufVxuLm5hdiB7XG4gIHotaW5kZXg6IDMgIWltcG9ydGFudDtcbiAgcG9zaXRpb246IHJlbGF0aXZlO1xufVxuLm5hdiBhIHtcbiAgY29sb3I6ICNmZmZmZmY7XG4gIHRleHQtZGVjb3JhdGlvbjogbm9uZTtcbiAgcGFkZGluZy1yaWdodDogMjVweDtcbiAgZm9udC13ZWlnaHQ6IDQwMDtcbiAgZm9udC1zaXplOiAxNXB4O1xufVxuLm5hdiAuaGVhZCB7XG4gIGZvbnQtd2VpZ2h0OiA1MDA7XG4gIGZvbnQtc2l6ZTogMjBweDtcbn1cbm1hdC1zaWRlbmF2IHtcbiAgd2lkdGg6IDI1MHB4O1xufVxubWF0LXNpZGVuYXYgYSBtYXQtaWNvbiB7XG4gIG1hcmdpbi1yaWdodDogMjVweDtcbiAgd2lkdGg6IDMwcHg7XG4gIGhlaWdodDogMzBweDtcbiAgZm9udC1zaXplOiAzMHB4O1xuICBsaW5lLWhlaWdodDogMzBweDtcbiAgY29sb3I6ICM2NzNhYjc7XG59XG5tYXQtc2lkZW5hdiAuYWN0aXZlLWxpc3QtaXRlbSB7XG4gIGJhY2tncm91bmQtY29sb3I6ICNlN2U3ZTc7XG59XG4iXX0= */"
+module.exports = "html {\n  height: 100%;\n}\nbody {\n  min-height: 100%;\n}\n.sidenav-container {\n  position: absolute;\n  top: 60px;\n  left: 0;\n  right: 0;\n  bottom: 0;\n}\n.sidenav-container img.logo {\n  display: block;\n  width: 30%;\n  margin: 30px auto;\n}\n.example-sidenav {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.nav-separator {\n  /* This fills the remaining space, by using flexbox.\n     Every toolbar row uses a flexbox row layout. */\n  flex: 1 1 auto;\n}\n.nav {\n  z-index: 3 !important;\n  position: relative;\n}\n.nav a,\n.nav .nav-text {\n  color: #ffffff;\n  text-decoration: none;\n  font-weight: 400;\n  font-size: 15px;\n}\n.nav a {\n  padding-right: 25px;\n}\n.nav .head {\n  font-weight: 500;\n  font-size: 20px;\n}\nmat-sidenav {\n  width: 250px;\n}\nmat-sidenav a mat-icon {\n  margin-right: 25px;\n  width: 30px;\n  height: 30px;\n  font-size: 30px;\n  line-height: 30px;\n  color: #673ab7;\n}\nmat-sidenav .active-list-item {\n  background-color: #e7e7e7;\n}\n\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvQzovVXNlcnMvY3Rob21hc3NldC9XZWJzdG9ybVByb2plY3RzL3Bvc2l0LWlmLWZyb250L3NyYy9hcHAvYXBwLmNvbXBvbmVudC5sZXNzIiwic3JjL2FwcC9hcHAuY29tcG9uZW50Lmxlc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQ0E7RUFDRSxZQUFBO0FDQUY7QURFQTtFQUNFLGdCQUFBO0FDQUY7QURFQTtFQUNFLGtCQUFBO0VBQ0EsU0FBQTtFQUNBLE9BQUE7RUFDQSxRQUFBO0VBQ0EsU0FBQTtBQ0FGO0FETEE7RUFRSSxjQUFBO0VBQ0EsVUFBQTtFQUNBLGlCQUFBO0FDQUo7QURJQTtFQUNFLGFBQUE7RUFDQSxtQkFBQTtFQUNBLHVCQUFBO0FDRkY7QURNQTtFQ0pFO21EQUNpRDtFRE1qRCxjQUFBO0FDSkY7QURPQTtFQVlFLHFCQUFBO0VBQ0Esa0JBQUE7QUNoQkY7QURHQTs7RUFFSSxjQUFBO0VBQ0EscUJBQUE7RUFDQSxnQkFBQTtFQUNBLGVBQUE7QUNESjtBREpBO0VBU0ksbUJBQUE7QUNGSjtBRFBBO0VBZ0JJLGdCQUFBO0VBQ0EsZUFBQTtBQ05KO0FEV0E7RUFDRSxZQUFBO0FDVEY7QURRQTtFQU1NLGtCQUFBO0VBRUEsV0FBQTtFQUNBLFlBQUE7RUFDQSxlQUFBO0VBQ0EsaUJBQUE7RUFDQSxjQUFBO0FDWk47QURBQTtFQW1CSSx5QkFBQTtBQ2hCSiIsImZpbGUiOiJzcmMvYXBwL2FwcC5jb21wb25lbnQubGVzcyIsInNvdXJjZXNDb250ZW50IjpbIkBpbXBvcnQgXCIuLi92YXJpYWJsZXMubGVzc1wiO1xuaHRtbCB7XG4gIGhlaWdodDogMTAwJTtcbn1cbmJvZHkge1xuICBtaW4taGVpZ2h0OiAxMDAlO1xufVxuLnNpZGVuYXYtY29udGFpbmVyIHtcbiAgcG9zaXRpb246IGFic29sdXRlO1xuICB0b3A6IDYwcHg7XG4gIGxlZnQ6IDA7XG4gIHJpZ2h0OiAwO1xuICBib3R0b206IDA7XG5cbiAgaW1nLmxvZ297XG4gICAgZGlzcGxheTogYmxvY2s7XG4gICAgd2lkdGg6IDMwJTtcbiAgICBtYXJnaW46IDMwcHggYXV0bztcbiAgfVxufVxuXG4uZXhhbXBsZS1zaWRlbmF2IHtcbiAgZGlzcGxheTogZmxleDtcbiAgYWxpZ24taXRlbXM6IGNlbnRlcjtcbiAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7XG59XG5cblxuLm5hdi1zZXBhcmF0b3Ige1xuICAvKiBUaGlzIGZpbGxzIHRoZSByZW1haW5pbmcgc3BhY2UsIGJ5IHVzaW5nIGZsZXhib3guXG4gICAgIEV2ZXJ5IHRvb2xiYXIgcm93IHVzZXMgYSBmbGV4Ym94IHJvdyBsYXlvdXQuICovXG4gIGZsZXg6IDEgMSBhdXRvO1xufVxuXG4ubmF2IHtcbiAgYSwgLm5hdi10ZXh0IHtcbiAgICBjb2xvcjogI2ZmZmZmZjtcbiAgICB0ZXh0LWRlY29yYXRpb246IG5vbmU7XG4gICAgZm9udC13ZWlnaHQ6IDQwMDtcbiAgICBmb250LXNpemU6IDE1cHg7XG4gIH1cblxuICBhe1xuICAgIHBhZGRpbmctcmlnaHQ6IDI1cHg7XG4gIH1cblxuICB6LWluZGV4OiAzICFpbXBvcnRhbnQ7XG4gIHBvc2l0aW9uOiByZWxhdGl2ZTtcblxuICAuaGVhZCB7XG4gICAgZm9udC13ZWlnaHQ6IDUwMDtcbiAgICBmb250LXNpemU6IDIwcHg7XG4gIH1cbn1cblxuXG5tYXQtc2lkZW5hdiB7XG4gIHdpZHRoOiBAc2lkZWJhci1zaXplO1xuXG4gIGEge1xuXG4gICAgbWF0LWljb24ge1xuICAgICAgbWFyZ2luLXJpZ2h0OiAyNXB4O1xuXG4gICAgICB3aWR0aDogMzBweDtcbiAgICAgIGhlaWdodDogMzBweDtcbiAgICAgIGZvbnQtc2l6ZTogMzBweDtcbiAgICAgIGxpbmUtaGVpZ2h0OiAzMHB4O1xuICAgICAgY29sb3I6IEBwcmltYXJ5O1xuICAgIH1cblxuXG4gIH1cblxuICAuYWN0aXZlLWxpc3QtaXRlbSB7XG4gICAgYmFja2dyb3VuZC1jb2xvcjogI2U3ZTdlNztcbiAgfVxufVxuIiwiaHRtbCB7XG4gIGhlaWdodDogMTAwJTtcbn1cbmJvZHkge1xuICBtaW4taGVpZ2h0OiAxMDAlO1xufVxuLnNpZGVuYXYtY29udGFpbmVyIHtcbiAgcG9zaXRpb246IGFic29sdXRlO1xuICB0b3A6IDYwcHg7XG4gIGxlZnQ6IDA7XG4gIHJpZ2h0OiAwO1xuICBib3R0b206IDA7XG59XG4uc2lkZW5hdi1jb250YWluZXIgaW1nLmxvZ28ge1xuICBkaXNwbGF5OiBibG9jaztcbiAgd2lkdGg6IDMwJTtcbiAgbWFyZ2luOiAzMHB4IGF1dG87XG59XG4uZXhhbXBsZS1zaWRlbmF2IHtcbiAgZGlzcGxheTogZmxleDtcbiAgYWxpZ24taXRlbXM6IGNlbnRlcjtcbiAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7XG59XG4ubmF2LXNlcGFyYXRvciB7XG4gIC8qIFRoaXMgZmlsbHMgdGhlIHJlbWFpbmluZyBzcGFjZSwgYnkgdXNpbmcgZmxleGJveC5cbiAgICAgRXZlcnkgdG9vbGJhciByb3cgdXNlcyBhIGZsZXhib3ggcm93IGxheW91dC4gKi9cbiAgZmxleDogMSAxIGF1dG87XG59XG4ubmF2IHtcbiAgei1pbmRleDogMyAhaW1wb3J0YW50O1xuICBwb3NpdGlvbjogcmVsYXRpdmU7XG59XG4ubmF2IGEsXG4ubmF2IC5uYXYtdGV4dCB7XG4gIGNvbG9yOiAjZmZmZmZmO1xuICB0ZXh0LWRlY29yYXRpb246IG5vbmU7XG4gIGZvbnQtd2VpZ2h0OiA0MDA7XG4gIGZvbnQtc2l6ZTogMTVweDtcbn1cbi5uYXYgYSB7XG4gIHBhZGRpbmctcmlnaHQ6IDI1cHg7XG59XG4ubmF2IC5oZWFkIHtcbiAgZm9udC13ZWlnaHQ6IDUwMDtcbiAgZm9udC1zaXplOiAyMHB4O1xufVxubWF0LXNpZGVuYXYge1xuICB3aWR0aDogMjUwcHg7XG59XG5tYXQtc2lkZW5hdiBhIG1hdC1pY29uIHtcbiAgbWFyZ2luLXJpZ2h0OiAyNXB4O1xuICB3aWR0aDogMzBweDtcbiAgaGVpZ2h0OiAzMHB4O1xuICBmb250LXNpemU6IDMwcHg7XG4gIGxpbmUtaGVpZ2h0OiAzMHB4O1xuICBjb2xvcjogIzY3M2FiNztcbn1cbm1hdC1zaWRlbmF2IC5hY3RpdmUtbGlzdC1pdGVtIHtcbiAgYmFja2dyb3VuZC1jb2xvcjogI2U3ZTdlNztcbn1cbiJdfQ== */"
 
 /***/ }),
 
@@ -1942,22 +1863,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _admin_admin_component__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./admin/admin.component */ "./src/app/admin/admin.component.ts");
 /* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @angular/forms */ "./node_modules/@angular/forms/fesm5/forms.js");
 /* harmony import */ var _helpers_error_interceptor__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./_helpers/error.interceptor */ "./src/app/_helpers/error.interceptor.ts");
-/* harmony import */ var _helpers_fake_backend__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./_helpers/fake-backend */ "./src/app/_helpers/fake-backend.ts");
-/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
-/* harmony import */ var _helpers_jwt_interceptor__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./_helpers/jwt.interceptor */ "./src/app/_helpers/jwt.interceptor.ts");
-/* harmony import */ var _components_alert_alert_component__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./_components/alert/alert.component */ "./src/app/_components/alert/alert.component.ts");
-/* harmony import */ var _page_not_found_page_not_found_component__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./page-not-found/page-not-found.component */ "./src/app/page-not-found/page-not-found.component.ts");
-/* harmony import */ var _clients_clients_component__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./clients/clients.component */ "./src/app/clients/clients.component.ts");
-/* harmony import */ var _pipes_filter_by_pipe__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./_pipes/filter-by.pipe */ "./src/app/_pipes/filter-by.pipe.ts");
-/* harmony import */ var _mediums_modal_medium_modal_medium_component__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./mediums/modal-medium/modal-medium.component */ "./src/app/mediums/modal-medium/modal-medium.component.ts");
-/* harmony import */ var _profile_profile_component__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./profile/profile.component */ "./src/app/profile/profile.component.ts");
-/* harmony import */ var _register_register_component__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./register/register.component */ "./src/app/register/register.component.ts");
-/* harmony import */ var _agm_core__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! @agm/core */ "./node_modules/@agm/core/index.js");
-/* harmony import */ var _pipes_capitalize_pipe__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./_pipes/capitalize.pipe */ "./src/app/_pipes/capitalize.pipe.ts");
-/* harmony import */ var _consultations_consultations_component__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./consultations/consultations.component */ "./src/app/consultations/consultations.component.ts");
-/* harmony import */ var _statistics_statistics_component__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./statistics/statistics.component */ "./src/app/statistics/statistics.component.ts");
-/* harmony import */ var _components_bar_chart_bar_chart_component__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./_components/bar-chart/bar-chart.component */ "./src/app/_components/bar-chart/bar-chart.component.ts");
-/* harmony import */ var _pipes_time_ago_pipe__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./_pipes/time-ago.pipe */ "./src/app/_pipes/time-ago.pipe.ts");
+/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
+/* harmony import */ var _helpers_jwt_interceptor__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./_helpers/jwt.interceptor */ "./src/app/_helpers/jwt.interceptor.ts");
+/* harmony import */ var _components_alert_alert_component__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./_components/alert/alert.component */ "./src/app/_components/alert/alert.component.ts");
+/* harmony import */ var _page_not_found_page_not_found_component__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./page-not-found/page-not-found.component */ "./src/app/page-not-found/page-not-found.component.ts");
+/* harmony import */ var _clients_clients_component__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./clients/clients.component */ "./src/app/clients/clients.component.ts");
+/* harmony import */ var _pipes_filter_by_pipe__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./_pipes/filter-by.pipe */ "./src/app/_pipes/filter-by.pipe.ts");
+/* harmony import */ var _mediums_modal_medium_modal_medium_component__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./mediums/modal-medium/modal-medium.component */ "./src/app/mediums/modal-medium/modal-medium.component.ts");
+/* harmony import */ var _profile_profile_component__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./profile/profile.component */ "./src/app/profile/profile.component.ts");
+/* harmony import */ var _register_register_component__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./register/register.component */ "./src/app/register/register.component.ts");
+/* harmony import */ var _agm_core__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! @agm/core */ "./node_modules/@agm/core/index.js");
+/* harmony import */ var _pipes_capitalize_pipe__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./_pipes/capitalize.pipe */ "./src/app/_pipes/capitalize.pipe.ts");
+/* harmony import */ var _consultations_consultations_component__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./consultations/consultations.component */ "./src/app/consultations/consultations.component.ts");
+/* harmony import */ var _statistics_statistics_component__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./statistics/statistics.component */ "./src/app/statistics/statistics.component.ts");
+/* harmony import */ var _components_bar_chart_bar_chart_component__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./_components/bar-chart/bar-chart.component */ "./src/app/_components/bar-chart/bar-chart.component.ts");
+/* harmony import */ var _pipes_time_ago_pipe__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./_pipes/time-ago.pipe */ "./src/app/_pipes/time-ago.pipe.ts");
+/* harmony import */ var _consultations_modal_consultation_modal_consultation_component__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./consultations/modal-consultation/modal-consultation.component */ "./src/app/consultations/modal-consultation/modal-consultation.component.ts");
 
 
 
@@ -1996,7 +1917,8 @@ var AppModule = /** @class */ (function () {
     AppModule = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_2__["NgModule"])({
             entryComponents: [
-                _mediums_modal_medium_modal_medium_component__WEBPACK_IMPORTED_MODULE_23__["ModalMediumComponent"]
+                _mediums_modal_medium_modal_medium_component__WEBPACK_IMPORTED_MODULE_22__["ModalMediumComponent"],
+                _consultations_modal_consultation_modal_consultation_component__WEBPACK_IMPORTED_MODULE_31__["ModalConsultationComponent"]
             ],
             declarations: [
                 _app_component__WEBPACK_IMPORTED_MODULE_4__["AppComponent"],
@@ -2006,18 +1928,19 @@ var AppModule = /** @class */ (function () {
                 _components_page_header_page_header_component__WEBPACK_IMPORTED_MODULE_10__["PageHeaderComponent"],
                 _login_login_component__WEBPACK_IMPORTED_MODULE_11__["LoginComponent"],
                 _admin_admin_component__WEBPACK_IMPORTED_MODULE_13__["AdminComponent"],
-                _components_alert_alert_component__WEBPACK_IMPORTED_MODULE_19__["AlertComponent"],
-                _page_not_found_page_not_found_component__WEBPACK_IMPORTED_MODULE_20__["PageNotFoundComponent"],
-                _clients_clients_component__WEBPACK_IMPORTED_MODULE_21__["ClientsComponent"],
-                _pipes_filter_by_pipe__WEBPACK_IMPORTED_MODULE_22__["FilterByPipe"],
-                _mediums_modal_medium_modal_medium_component__WEBPACK_IMPORTED_MODULE_23__["ModalMediumComponent"],
-                _profile_profile_component__WEBPACK_IMPORTED_MODULE_24__["ProfileComponent"],
-                _register_register_component__WEBPACK_IMPORTED_MODULE_25__["RegisterComponent"],
-                _pipes_capitalize_pipe__WEBPACK_IMPORTED_MODULE_27__["CapitalizePipe"],
-                _consultations_consultations_component__WEBPACK_IMPORTED_MODULE_28__["ConsultationsComponent"],
-                _statistics_statistics_component__WEBPACK_IMPORTED_MODULE_29__["StatisticsComponent"],
-                _components_bar_chart_bar_chart_component__WEBPACK_IMPORTED_MODULE_30__["BarChartComponent"],
-                _pipes_time_ago_pipe__WEBPACK_IMPORTED_MODULE_31__["TimeAgoPipe"]
+                _components_alert_alert_component__WEBPACK_IMPORTED_MODULE_18__["AlertComponent"],
+                _page_not_found_page_not_found_component__WEBPACK_IMPORTED_MODULE_19__["PageNotFoundComponent"],
+                _clients_clients_component__WEBPACK_IMPORTED_MODULE_20__["ClientsComponent"],
+                _pipes_filter_by_pipe__WEBPACK_IMPORTED_MODULE_21__["FilterByPipe"],
+                _mediums_modal_medium_modal_medium_component__WEBPACK_IMPORTED_MODULE_22__["ModalMediumComponent"],
+                _profile_profile_component__WEBPACK_IMPORTED_MODULE_23__["ProfileComponent"],
+                _register_register_component__WEBPACK_IMPORTED_MODULE_24__["RegisterComponent"],
+                _pipes_capitalize_pipe__WEBPACK_IMPORTED_MODULE_26__["CapitalizePipe"],
+                _consultations_consultations_component__WEBPACK_IMPORTED_MODULE_27__["ConsultationsComponent"],
+                _statistics_statistics_component__WEBPACK_IMPORTED_MODULE_28__["StatisticsComponent"],
+                _components_bar_chart_bar_chart_component__WEBPACK_IMPORTED_MODULE_29__["BarChartComponent"],
+                _pipes_time_ago_pipe__WEBPACK_IMPORTED_MODULE_30__["TimeAgoPipe"],
+                _consultations_modal_consultation_modal_consultation_component__WEBPACK_IMPORTED_MODULE_31__["ModalConsultationComponent"]
             ],
             imports: [
                 _angular_platform_browser__WEBPACK_IMPORTED_MODULE_1__["BrowserModule"],
@@ -2035,7 +1958,7 @@ var AppModule = /** @class */ (function () {
                 _angular_material__WEBPACK_IMPORTED_MODULE_7__["MatCardModule"],
                 _angular_flex_layout__WEBPACK_IMPORTED_MODULE_12__["FlexLayoutModule"],
                 _angular_forms__WEBPACK_IMPORTED_MODULE_14__["ReactiveFormsModule"],
-                _angular_common_http__WEBPACK_IMPORTED_MODULE_17__["HttpClientModule"],
+                _angular_common_http__WEBPACK_IMPORTED_MODULE_16__["HttpClientModule"],
                 _angular_material__WEBPACK_IMPORTED_MODULE_7__["MatTabsModule"],
                 _angular_material__WEBPACK_IMPORTED_MODULE_7__["MatGridListModule"],
                 _angular_material__WEBPACK_IMPORTED_MODULE_7__["MatDialogModule"],
@@ -2043,16 +1966,15 @@ var AppModule = /** @class */ (function () {
                 _angular_forms__WEBPACK_IMPORTED_MODULE_14__["FormsModule"],
                 _angular_material__WEBPACK_IMPORTED_MODULE_7__["MatProgressSpinnerModule"],
                 _angular_material__WEBPACK_IMPORTED_MODULE_7__["MatStepperModule"],
-                _agm_core__WEBPACK_IMPORTED_MODULE_26__["AgmCoreModule"].forRoot({
+                _agm_core__WEBPACK_IMPORTED_MODULE_25__["AgmCoreModule"].forRoot({
                     apiKey: 'AIzaSyB5lDHjnyrZrtTTT1odVeGSHXVQ2GKboTg'
                 }),
                 _angular_material__WEBPACK_IMPORTED_MODULE_7__["MatChipsModule"],
                 _angular_material__WEBPACK_IMPORTED_MODULE_7__["MatTooltipModule"]
             ],
             providers: [
-                { provide: _angular_common_http__WEBPACK_IMPORTED_MODULE_17__["HTTP_INTERCEPTORS"], useClass: _helpers_jwt_interceptor__WEBPACK_IMPORTED_MODULE_18__["JwtInterceptor"], multi: true },
-                { provide: _angular_common_http__WEBPACK_IMPORTED_MODULE_17__["HTTP_INTERCEPTORS"], useClass: _helpers_error_interceptor__WEBPACK_IMPORTED_MODULE_15__["ErrorInterceptor"], multi: true },
-                _helpers_fake_backend__WEBPACK_IMPORTED_MODULE_16__["fakeBackendProvider"]
+                { provide: _angular_common_http__WEBPACK_IMPORTED_MODULE_16__["HTTP_INTERCEPTORS"], useClass: _helpers_jwt_interceptor__WEBPACK_IMPORTED_MODULE_17__["JwtInterceptor"], multi: true },
+                { provide: _angular_common_http__WEBPACK_IMPORTED_MODULE_16__["HTTP_INTERCEPTORS"], useClass: _helpers_error_interceptor__WEBPACK_IMPORTED_MODULE_15__["ErrorInterceptor"], multi: true },
             ],
             bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_4__["AppComponent"]]
         })
@@ -2136,7 +2058,7 @@ var ClientsComponent = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<app-page-header>Mes consultations</app-page-header>\n\n<div class=\"section-container\">\n\n  <div fxLayout=\"row\" fxLayoutAlign=\"center center\" *ngIf=\"!consultations\">\n    <mat-spinner></mat-spinner>\n  </div>\n\n  <table mat-table [dataSource]=\"consultations\" class=\"mat-elevation-z4\" *ngIf=\"consultations\">\n\n    <ng-container matColumnDef=\"state\">\n      <th mat-header-cell *matHeaderCellDef>Etat</th>\n      <td mat-cell *matCellDef=\"let element\">\n        <span class=\"badge badge-success\" *ngIf=\"element.state === 'PENDING'\">En cours</span>\n        <span class=\"badge badge-primary\" *ngIf=\"element.state === 'WAITING_VALIDATION'\">En attente</span>\n        <span class=\"badge badge-grey\" *ngIf=\"element.state === 'CLOSED'\">Terminée</span>\n\n      </td>\n    </ng-container>\n\n    <ng-container matColumnDef=\"createdAt\">\n      <th mat-header-cell *matHeaderCellDef>Date de demande</th>\n      <td mat-cell *matCellDef=\"let element\"> {{element.createdAt | date:'dd/MM/yyyy - hh:mm'}} </td>\n    </ng-container>\n\n    <ng-container matColumnDef=\"client\">\n      <th mat-header-cell *matHeaderCellDef>Client</th>\n      <td mat-cell *matCellDef=\"let element\"><a [routerLink]=\"'/users/' + element.client.id\">{{element.client.firstname | capitalize}} {{element.client.lastname | capitalize}} </a> </td>\n    </ng-container>\n\n    <tr mat-header-row *matHeaderRowDef=\"displayedColumns\"></tr>\n    <tr mat-row *matRowDef=\"let row; columns: displayedColumns;\" ></tr>\n  </table>\n\n</div>\n"
+module.exports = "<app-page-header>Mes consultations</app-page-header>\n\n<div class=\"section-container\">\n\n  <div fxLayout=\"row\" fxLayoutAlign=\"center center\" *ngIf=\"!consultations\">\n    <mat-spinner></mat-spinner>\n  </div>\n\n  <table mat-table [dataSource]=\"consultations\" class=\"mat-elevation-z4\" *ngIf=\"consultations\">\n\n    <ng-container matColumnDef=\"state\">\n      <th mat-header-cell *matHeaderCellDef>Etat</th>\n      <td mat-cell *matCellDef=\"let element\">\n        <span class=\"badge badge-success\" *ngIf=\"element.state === 'PENDING'\">En cours</span>\n        <span class=\"badge badge-primary\" *ngIf=\"element.state === 'WAITING_VALIDATION'\">En attente</span>\n        <span class=\"badge badge-grey\" *ngIf=\"element.state === 'CLOSED'\">Terminée</span>\n\n      </td>\n    </ng-container>\n\n    <ng-container matColumnDef=\"createdAt\">\n      <th mat-header-cell *matHeaderCellDef>Date de demande</th>\n      <td mat-cell *matCellDef=\"let element\"> {{element.createdAt | date:'dd/MM/yyyy - hh:mm'}} </td>\n    </ng-container>\n\n    <ng-container matColumnDef=\"client\">\n      <th mat-header-cell *matHeaderCellDef>Client</th>\n      <td mat-cell *matCellDef=\"let element\"><a [routerLink]=\"'/users/' + element.client.id\">{{element.client.firstname | capitalize}} {{element.client.lastname | capitalize}} </a> </td>\n    </ng-container>\n\n    <ng-container matColumnDef=\"medium\">\n      <th mat-header-cell *matHeaderCellDef>Medium</th>\n      <td mat-cell *matCellDef=\"let element\"><a [routerLink]=\"'/mediums/' + element.medium.id\">{{element.medium.firstname}} {{element.medium.lastname}} </a> </td>\n    </ng-container>\n\n    <ng-container matColumnDef=\"actions\">\n      <th mat-header-cell *matHeaderCellDef>Client</th>\n      <td mat-cell *matCellDef=\"let element\">\n        <button mat-stroked-button color=\"primary\"(click)=\"openModal(element.id)\"> Details</button>\n      </td>\n    </ng-container>\n\n\n    <tr mat-header-row *matHeaderRowDef=\"displayedColumns\"></tr>\n    <tr mat-row *matRowDef=\"let row; columns: displayedColumns;\" ></tr>\n  </table>\n\n</div>\n"
 
 /***/ }),
 
@@ -2167,6 +2089,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _models__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../_models */ "./src/app/_models/index.ts");
 /* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/router */ "./node_modules/@angular/router/fesm5/router.js");
 /* harmony import */ var _services_user_service__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../_services/user.service */ "./src/app/_services/user.service.ts");
+/* harmony import */ var _angular_material__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/material */ "./node_modules/@angular/material/esm5/material.es5.js");
+/* harmony import */ var _modal_consultation_modal_consultation_component__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./modal-consultation/modal-consultation.component */ "./src/app/consultations/modal-consultation/modal-consultation.component.ts");
+
+
 
 
 
@@ -2174,17 +2100,24 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ConsultationsComponent = /** @class */ (function () {
-    function ConsultationsComponent(consultationService, route, router, userService) {
+    function ConsultationsComponent(consultationService, route, router, userService, modal) {
         var _this = this;
         this.consultationService = consultationService;
         this.route = route;
         this.router = router;
         this.userService = userService;
-        this.displayedColumns = ['state', 'createdAt', 'client'];
-        if (this.router.url.match(/\/consultations\/\d+$/)) {
+        this.modal = modal;
+        this.displayedColumns = ['state', 'createdAt', 'medium', 'client', 'actions'];
+        if (this.router.url.match(/\/consultations\/user\/\d+$/)) {
             this.route.paramMap.subscribe(function (p) {
                 _this.userService.getById(parseInt(p.get('id'))).subscribe(function (user) { return _this.getConsultations(user); });
             });
+        }
+        else if (this.router.url.match(/\/consultations\/\d+$/)) {
+            this.route.children[0].paramMap.subscribe(function (p) {
+                _this.openModal(parseInt(p.get('id')));
+            });
+            this.userService.getCurrent().subscribe(function (user) { return _this.getConsultations(user); });
         }
         else {
             this.userService.getCurrent().subscribe(function (user) { return _this.getConsultations(user); });
@@ -2197,15 +2130,28 @@ var ConsultationsComponent = /** @class */ (function () {
         if (user) {
             this.user = user;
             if (this.user.role === _models__WEBPACK_IMPORTED_MODULE_3__["Role"].Employee) {
-                this.consultationService.getByEmployeeId(this.user.id).subscribe(function (consultations) { return console.log(_this.consultations = consultations); });
+                this.consultationService.getAllByEmployeeId(this.user.id).subscribe(function (consultations) { return console.log(_this.consultations = consultations); });
             }
             else {
-                this.consultationService.getByClientId(this.user.id).subscribe(function (consultations) { return console.log(_this.consultations = consultations); });
+                this.consultationService.getAllByClientId(this.user.id).subscribe(function (consultations) { return console.log(_this.consultations = consultations); });
             }
         }
         else {
             this.error = 'L\'utilisateur demandé n\'existe pas.';
         }
+    };
+    ConsultationsComponent.prototype.openModal = function (id) {
+        var _this = this;
+        this.router.navigate([id], { relativeTo: this.route });
+        this.modal
+            .open(_modal_consultation_modal_consultation_component__WEBPACK_IMPORTED_MODULE_7__["ModalConsultationComponent"], {
+            data: { id: id },
+            width: '400px'
+        })
+            .afterClosed()
+            .subscribe(function () {
+            _this.router.navigate(['.'], { relativeTo: _this.route });
+        });
     };
     ConsultationsComponent = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"])({
@@ -2213,9 +2159,79 @@ var ConsultationsComponent = /** @class */ (function () {
             template: __webpack_require__(/*! ./consultations.component.html */ "./src/app/consultations/consultations.component.html"),
             styles: [__webpack_require__(/*! ./consultations.component.less */ "./src/app/consultations/consultations.component.less")]
         }),
-        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_services_consultation_service__WEBPACK_IMPORTED_MODULE_2__["ConsultationService"], _angular_router__WEBPACK_IMPORTED_MODULE_4__["ActivatedRoute"], _angular_router__WEBPACK_IMPORTED_MODULE_4__["Router"], _services_user_service__WEBPACK_IMPORTED_MODULE_5__["UserService"]])
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_services_consultation_service__WEBPACK_IMPORTED_MODULE_2__["ConsultationService"], _angular_router__WEBPACK_IMPORTED_MODULE_4__["ActivatedRoute"], _angular_router__WEBPACK_IMPORTED_MODULE_4__["Router"], _services_user_service__WEBPACK_IMPORTED_MODULE_5__["UserService"], _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatDialog"]])
     ], ConsultationsComponent);
     return ConsultationsComponent;
+}());
+
+
+
+/***/ }),
+
+/***/ "./src/app/consultations/modal-consultation/modal-consultation.component.html":
+/*!************************************************************************************!*\
+  !*** ./src/app/consultations/modal-consultation/modal-consultation.component.html ***!
+  \************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "<div fxLayoutAlign=\"center\">\n  <mat-spinner *ngIf=\"!consultation\"></mat-spinner>\n</div>\n\n\n<div *ngIf=\"consultation\">\n  <h1 mat-dialog-title>\n    Consultation n°{{consultation.id}}\n  </h1>\n  <div mat-dialog-content>\n\n\n    <table>\n      <tr>\n        <td>\n          <strong>Etat de la consultation : </strong>\n        </td>\n        <td>\n          <span class=\"badge badge-success\" *ngIf=\"consultation.state === 'PENDING'\">En cours</span>\n          <span class=\"badge badge-primary\" *ngIf=\"consultation.state === 'WAITING_VALIDATION'\">En attente</span>\n          <span class=\"badge badge-grey\" *ngIf=\"consultation.state === 'CLOSED'\">Terminée</span>\n        </td>\n      </tr>\n      <tr>\n        <td>\n          <strong>Medium demandé : </strong>\n        </td>\n        <td>\n          <a [routerLink]=\"'mediums/' + consultation.medium.id\">{{consultation.medium.name}}</a>\n        </td>\n      </tr>\n\n      <tr *ngIf=\"user.role === 'Employee'\">\n        <td>\n          <strong>Client :</strong>\n        </td>\n        <td>\n          <a\n            [routerLink]=\"'users/' + consultation.client.id\">{{consultation.client.firstname}} {{consultation.client.lastname}}</a>\n        </td>\n\n      </tr>\n\n      <tr *ngIf=\"user.role === 'Employee'\">\n        <td>\n          <strong>Employé associé :</strong>\n        </td>\n        <td>\n          <a\n            [routerLink]=\"'users/' + consultation.employee.id\">{{consultation.employee.firstname}} {{consultation.employee.lastname}}</a>\n        </td>\n\n      </tr>\n\n      <tr *ngIf=\"consultation.createdAt\">\n        <td>\n          <strong>Créé le : </strong>\n        </td>\n        <td>\n          {{consultation.createdAt | date:'dd/MM/yyyy - hh:mm'}}\n        </td>\n      </tr>\n\n      <tr *ngIf=\"consultation.answeredAt\">\n        <td>\n          <strong>Accepté le : </strong>\n        </td>\n        <td>\n          {{consultation.answeredAt | date:'dd/MM/yyyy - hh:mm'}}\n        </td>\n      </tr>\n\n      <tr *ngIf=\"consultation.closedAt\">\n        <td>\n          <strong>Terminé le : </strong>\n        </td>\n        <td>\n          {{consultation.closedAt | date:'dd/MM/yyyy - hh:mm'}}\n        </td>\n      </tr>\n\n\n    </table>\n\n\n  </div>\n\n  <div mat-dialog-actions>\n    <button mat-stroked-button color=\"primary\">Fermer</button>\n  </div>\n</div>\n"
+
+/***/ }),
+
+/***/ "./src/app/consultations/modal-consultation/modal-consultation.component.less":
+/*!************************************************************************************!*\
+  !*** ./src/app/consultations/modal-consultation/modal-consultation.component.less ***!
+  \************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "table td {\n  padding: 10px 3px;\n}\n\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvY29uc3VsdGF0aW9ucy9tb2RhbC1jb25zdWx0YXRpb24vQzovVXNlcnMvY3Rob21hc3NldC9XZWJzdG9ybVByb2plY3RzL3Bvc2l0LWlmLWZyb250L3NyYy9hcHAvY29uc3VsdGF0aW9ucy9tb2RhbC1jb25zdWx0YXRpb24vbW9kYWwtY29uc3VsdGF0aW9uLmNvbXBvbmVudC5sZXNzIiwic3JjL2FwcC9jb25zdWx0YXRpb25zL21vZGFsLWNvbnN1bHRhdGlvbi9tb2RhbC1jb25zdWx0YXRpb24uY29tcG9uZW50Lmxlc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7RUFFSSxpQkFBQTtBQ0FKIiwiZmlsZSI6InNyYy9hcHAvY29uc3VsdGF0aW9ucy9tb2RhbC1jb25zdWx0YXRpb24vbW9kYWwtY29uc3VsdGF0aW9uLmNvbXBvbmVudC5sZXNzIiwic291cmNlc0NvbnRlbnQiOlsidGFibGV7XG4gIHRkIHtcbiAgICBwYWRkaW5nOiAxMHB4IDNweDtcbiAgfVxufVxuIiwidGFibGUgdGQge1xuICBwYWRkaW5nOiAxMHB4IDNweDtcbn1cbiJdfQ== */"
+
+/***/ }),
+
+/***/ "./src/app/consultations/modal-consultation/modal-consultation.component.ts":
+/*!**********************************************************************************!*\
+  !*** ./src/app/consultations/modal-consultation/modal-consultation.component.ts ***!
+  \**********************************************************************************/
+/*! exports provided: ModalConsultationComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ModalConsultationComponent", function() { return ModalConsultationComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
+/* harmony import */ var _angular_material__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/material */ "./node_modules/@angular/material/esm5/material.es5.js");
+/* harmony import */ var _services_consultation_service__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../_services/consultation.service */ "./src/app/_services/consultation.service.ts");
+/* harmony import */ var _services_authentication_service__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../_services/authentication.service */ "./src/app/_services/authentication.service.ts");
+
+
+
+
+
+var ModalConsultationComponent = /** @class */ (function () {
+    function ModalConsultationComponent(config, consultationService, authenticationService) {
+        var _this = this;
+        this.config = config;
+        this.consultationService = consultationService;
+        this.authenticationService = authenticationService;
+        this.consultationID = config.id;
+        this.user = this.authenticationService.currentUserValue;
+        consultationService.getOneById(this.consultationID).subscribe(function (c) { return _this.consultation = c; });
+    }
+    ModalConsultationComponent.prototype.ngOnInit = function () {
+    };
+    ModalConsultationComponent = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"])({
+            selector: 'app-modal-consultation',
+            template: __webpack_require__(/*! ./modal-consultation.component.html */ "./src/app/consultations/modal-consultation/modal-consultation.component.html"),
+            styles: [__webpack_require__(/*! ./modal-consultation.component.less */ "./src/app/consultations/modal-consultation/modal-consultation.component.less")]
+        }),
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__param"](0, Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"])(_angular_material__WEBPACK_IMPORTED_MODULE_2__["MAT_DIALOG_DATA"])),
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [Object, _services_consultation_service__WEBPACK_IMPORTED_MODULE_3__["ConsultationService"], _services_authentication_service__WEBPACK_IMPORTED_MODULE_4__["AuthenticationService"]])
+    ], ModalConsultationComponent);
+    return ModalConsultationComponent;
 }());
 
 
@@ -2229,7 +2245,7 @@ var ConsultationsComponent = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"section-container\">\r\n  <h1>Bonjour {{currentUser.firstname}} !</h1>\r\n</div>\r\n"
+module.exports = "<div class=\"section-container\" *ngIf=\"currentUser\">\r\n  <h1>Bonjour {{currentUser.firstname}} !</h1>\r\n</div>\r\n"
 
 /***/ }),
 
@@ -2266,15 +2282,15 @@ __webpack_require__.r(__webpack_exports__);
 
 var HomeComponent = /** @class */ (function () {
     function HomeComponent(userService, authenticationService) {
+        var _this = this;
         this.userService = userService;
         this.authenticationService = authenticationService;
         this.currentUser = this.authenticationService.currentUserValue;
-    }
-    HomeComponent.prototype.ngOnInit = function () {
-        var _this = this;
-        this.userService.getById(this.currentUser.id).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["first"])()).subscribe(function (user) {
+        this.userService.getCurrent().pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["first"])()).subscribe(function (user) {
             _this.userFromApi = user;
         });
+    }
+    HomeComponent.prototype.ngOnInit = function () {
     };
     HomeComponent = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"])({
@@ -2776,11 +2792,14 @@ var RegisterComponent = /** @class */ (function () {
         }
         else {
             this.authService.register({
+                gender: 'M',
+                birthDate: '1997-05-12T21:26:32.499Z',
                 lastname: this.firstFormGroup.controls.lastname.value,
                 firstname: this.firstFormGroup.controls.firstname.value,
                 password: this.firstFormGroup.controls.password.value,
+                passwordConfirmed: this.firstFormGroup.controls.passwordConfirmed.value,
                 email: this.secondFormGroup.controls.email.value,
-                phone: this.secondFormGroup.controls.phone.value,
+                phoneNumber: this.secondFormGroup.controls.phone.value,
                 address: [this.thirdFormGroup.controls.addressField1.value, this.thirdFormGroup.controls.addressField2.value, this.thirdFormGroup.controls.addressField3.value, this.thirdFormGroup.controls.addressField4.value].join(' ')
             });
         }
@@ -2864,1726 +2883,6 @@ var StatisticsComponent = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "./src/assets/dummyData/clients.ts":
-/*!*****************************************!*\
-  !*** ./src/assets/dummyData/clients.ts ***!
-  \*****************************************/
-/*! exports provided: clients */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "clients", function() { return clients; });
-/* harmony import */ var _app_models__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../app/_models */ "./src/app/_models/index.ts");
-
-// fetch('https://randomuser.me/api/?nat=fr&results=50')
-//   .then(data => data.json())
-//   .then(json => {
-//     console.log(json.results.reduce((acc, user) => {
-//
-//       const voice = user.gender == 'male' ? 'VoiceType.MASCULINE' : 'VoiceType.FEMININE';
-//       const experience = Math.random() > 0.5 ? 'ExperienceType.SENIOR' : 'ExperienceType.JUNIOR';
-//       const gender = user.gender == 'male' ? 'M' : 'F';
-//
-//       // acc += `PersonDao.persist(new Employee(${voice}, ${experience}, "${user.email}", "${user.name.first}", "${user.name.last}", "${gender}", "${user.login.password}", Date.from( Instant.parse("${user.dob.date}"))));\n`
-//
-//       acc += `
-//   {
-//     id: ${Math.floor(Math.random()*1000)},
-//     password: '${user.login.password}',
-//     firstname: '${user.name.first}',
-//     lastname: '${user.name.last}',
-//     email: '${user.email}',
-//     role: Role.Client,
-//     address: {
-//       lon: ${user.location.coordinates.longitude},
-//       lat: ${user.location.coordinates.latitude},
-//       string:"${user.location.street + ' ' + user.location.city + ' ' + user.location.state}"
-//     },
-//     phone:"${user.phone.replace('-', '')}",
-//     gender: '${user.gender.toUpperCase().charAt(0)}',
-//     birthDate: new Date('${user.dob.date}')
-//   },`;
-//
-//       return acc;
-//     }, ''));
-//   });
-var clients = [
-    {
-        id: 751,
-        password: 'keith',
-        firstname: 'norah',
-        lastname: 'rey',
-        email: 'norah.rey@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 104.7710,
-            lat: -46.7753,
-            string: "3981 rue de l'abbé-migne rouen indre-et-loire"
-        },
-        phone: "0445489863",
-        gender: 'F',
-        birthDate: new Date('1970-12-14T09:33:20Z')
-    },
-    {
-        id: 943,
-        password: 'coucou',
-        firstname: 'logan',
-        lastname: 'philippe',
-        email: 'logan.philippe@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -66.8211,
-            lat: 27.7913,
-            string: "8018 rue des abbesses angers aube"
-        },
-        phone: "0363135140",
-        gender: 'M',
-        birthDate: new Date('1968-07-24T20:32:04Z')
-    },
-    {
-        id: 264,
-        password: 'arthur',
-        firstname: 'lia',
-        lastname: 'jean',
-        email: 'lia.jean@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -111.8292,
-            lat: 25.4555,
-            string: "5059 avenue de la libération montpellier vaucluse"
-        },
-        phone: "0109718381",
-        gender: 'F',
-        birthDate: new Date('1960-02-07T16:31:15Z')
-    },
-    {
-        id: 643,
-        password: 'masamune',
-        firstname: 'line',
-        lastname: 'adam',
-        email: 'line.adam@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 107.4562,
-            lat: 28.2916,
-            string: "3216 rue du dauphiné saint-étienne haute-marne"
-        },
-        phone: "0381891060",
-        gender: 'F',
-        birthDate: new Date('1967-03-14T06:26:00Z')
-    },
-    {
-        id: 548,
-        password: 'gotribe',
-        firstname: 'coline',
-        lastname: 'lambert',
-        email: 'coline.lambert@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 148.6781,
-            lat: -85.9140,
-            string: "7890 rue du 8 mai 1945 grenoble gard"
-        },
-        phone: "0558102116",
-        gender: 'F',
-        birthDate: new Date('1974-03-09T18:54:59Z')
-    },
-    {
-        id: 245,
-        password: 'gregor',
-        firstname: 'enora',
-        lastname: 'lemoine',
-        email: 'enora.lemoine@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 128.7426,
-            lat: 56.2632,
-            string: "7876 rue des abbesses paris indre-et-loire"
-        },
-        phone: "0565892059",
-        gender: 'F',
-        birthDate: new Date('1979-03-10T13:54:43Z')
-    },
-    {
-        id: 797,
-        password: 'crack',
-        firstname: 'julien',
-        lastname: 'roussel',
-        email: 'julien.roussel@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -138.5296,
-            lat: -69.9384,
-            string: "4627 rue saint-georges aulnay-sous-bois lot"
-        },
-        phone: "0455999204",
-        gender: 'M',
-        birthDate: new Date('1949-10-12T09:20:32Z')
-    },
-    {
-        id: 426,
-        password: 'camper',
-        firstname: 'sacha',
-        lastname: 'aubert',
-        email: 'sacha.aubert@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 132.5126,
-            lat: -11.4315,
-            string: "2670 rue gasparin nanterre corrèze"
-        },
-        phone: "0321235465",
-        gender: 'M',
-        birthDate: new Date('1981-02-07T00:22:21Z')
-    },
-    {
-        id: 338,
-        password: 'older',
-        firstname: 'théodore',
-        lastname: 'blanc',
-        email: 'théodore.blanc@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 177.5611,
-            lat: -20.3559,
-            string: "7680 rue du village nîmes loiret"
-        },
-        phone: "0398417322",
-        gender: 'M',
-        birthDate: new Date('1980-07-07T13:57:11Z')
-    },
-    {
-        id: 903,
-        password: 'taichi',
-        firstname: 'hanaé',
-        lastname: 'lefebvre',
-        email: 'hanaé.lefebvre@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 172.4773,
-            lat: 12.6501,
-            string: "170 rue du cardinal-gerlier paris haute-saône"
-        },
-        phone: "0517449371",
-        gender: 'F',
-        birthDate: new Date('1979-08-04T01:07:23Z')
-    },
-    {
-        id: 678,
-        password: 'jimmys',
-        firstname: 'johan',
-        lastname: 'joly',
-        email: 'johan.joly@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 172.5510,
-            lat: 0.4352,
-            string: "4352 rue cyrus-hugues nîmes seine-saint-denis"
-        },
-        phone: "0457644774",
-        gender: 'M',
-        birthDate: new Date('1973-02-17T04:59:03Z')
-    },
-    {
-        id: 522,
-        password: 'flowers',
-        firstname: 'livia',
-        lastname: 'giraud',
-        email: 'livia.giraud@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 75.9353,
-            lat: 14.8133,
-            string: "2089 rue saint-georges argenteuil marne"
-        },
-        phone: "0196339883",
-        gender: 'F',
-        birthDate: new Date('1971-10-07T08:43:58Z')
-    },
-    {
-        id: 442,
-        password: 'rusty',
-        firstname: 'emmie',
-        lastname: 'meunier',
-        email: 'emmie.meunier@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -103.8381,
-            lat: -68.3740,
-            string: "4773 rue duguesclin reims oise"
-        },
-        phone: "0329185012",
-        gender: 'F',
-        birthDate: new Date('1968-12-23T23:09:11Z')
-    },
-    {
-        id: 591,
-        password: 'playa',
-        firstname: 'mathis',
-        lastname: 'vidal',
-        email: 'mathis.vidal@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -52.1838,
-            lat: 14.9000,
-            string: "4999 boulevard de la duchère champigny-sur-marne loir-et-cher"
-        },
-        phone: "0459482991",
-        gender: 'M',
-        birthDate: new Date('1981-06-26T04:05:30Z')
-    },
-    {
-        id: 540,
-        password: 'nimrod',
-        firstname: 'ava',
-        lastname: 'thomas',
-        email: 'ava.thomas@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -11.0868,
-            lat: 45.7316,
-            string: "7345 rue de l'abbé-carton vitry-sur-seine bas-rhin"
-        },
-        phone: "0432288404",
-        gender: 'F',
-        birthDate: new Date('1995-09-10T03:08:03Z')
-    },
-    {
-        id: 456,
-        password: 'tekken',
-        firstname: 'milo',
-        lastname: 'olivier',
-        email: 'milo.olivier@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 58.1106,
-            lat: 31.3251,
-            string: "4251 rue de gerland fort-de-france yvelines"
-        },
-        phone: "0514108864",
-        gender: 'M',
-        birthDate: new Date('1968-12-19T05:58:38Z')
-    },
-    {
-        id: 23,
-        password: 'charlie',
-        firstname: 'lyna',
-        lastname: 'pierre',
-        email: 'lyna.pierre@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -14.2803,
-            lat: -20.4700,
-            string: "5864 avenue debourg strasbourg yonne"
-        },
-        phone: "0413469123",
-        gender: 'F',
-        birthDate: new Date('1973-10-29T20:09:46Z')
-    },
-    {
-        id: 42,
-        password: 'gate',
-        firstname: 'amelia',
-        lastname: 'hubert',
-        email: 'amelia.hubert@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -157.5615,
-            lat: 68.3493,
-            string: "6463 rue de l'abbé-rousselot marseille marne"
-        },
-        phone: "0264173587",
-        gender: 'F',
-        birthDate: new Date('1964-07-15T22:58:40Z')
-    },
-    {
-        id: 790,
-        password: 'handsome',
-        firstname: 'anaëlle',
-        lastname: 'garnier',
-        email: 'anaëlle.garnier@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -136.1107,
-            lat: 72.5311,
-            string: "4679 rue paul-duvivier clermont-ferrand ain"
-        },
-        phone: "0351468476",
-        gender: 'F',
-        birthDate: new Date('1946-10-02T17:39:24Z')
-    },
-    {
-        id: 869,
-        password: 'mullet',
-        firstname: 'valentine',
-        lastname: 'francois',
-        email: 'valentine.francois@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 179.1336,
-            lat: 27.9729,
-            string: "2401 place du 8 février 1962 metz morbihan"
-        },
-        phone: "0527137369",
-        gender: 'F',
-        birthDate: new Date('1955-07-23T05:19:52Z')
-    },
-    {
-        id: 836,
-        password: 'michigan',
-        firstname: 'timothe',
-        lastname: 'leclerc',
-        email: 'timothe.leclerc@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 127.1412,
-            lat: -59.6195,
-            string: "129 rue de la fontaine colombes eure"
-        },
-        phone: "0215131223",
-        gender: 'M',
-        birthDate: new Date('1948-05-17T05:39:18Z')
-    },
-    {
-        id: 832,
-        password: 'dotcom',
-        firstname: 'laly',
-        lastname: 'giraud',
-        email: 'laly.giraud@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 91.2866,
-            lat: 5.1096,
-            string: "7879 rue de l'abbé-groult fort-de-france guadeloupe"
-        },
-        phone: "0447853184",
-        gender: 'F',
-        birthDate: new Date('1965-07-21T01:20:44Z')
-    },
-    {
-        id: 778,
-        password: 'onetwo',
-        firstname: 'milan',
-        lastname: 'martin',
-        email: 'milan.martin@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -19.6595,
-            lat: 44.6943,
-            string: "6434 rue du village versailles guyane"
-        },
-        phone: "0430506416",
-        gender: 'M',
-        birthDate: new Date('1947-02-24T06:53:52Z')
-    },
-    {
-        id: 544,
-        password: 'hummer',
-        firstname: 'tony',
-        lastname: 'roussel',
-        email: 'tony.roussel@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 82.2994,
-            lat: 83.9214,
-            string: "4040 rue barrier toulouse charente"
-        },
-        phone: "0477185365",
-        gender: 'M',
-        birthDate: new Date('1950-07-15T02:00:29Z')
-    },
-    {
-        id: 972,
-        password: 'knockers',
-        firstname: 'liam',
-        lastname: 'bonnet',
-        email: 'liam.bonnet@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -76.4390,
-            lat: 48.9770,
-            string: "9180 rue baraban nanterre nièvre"
-        },
-        phone: "0199046128",
-        gender: 'M',
-        birthDate: new Date('1972-02-11T05:57:24Z')
-    },
-    {
-        id: 374,
-        password: '0101',
-        firstname: 'mathieu',
-        lastname: 'bernard',
-        email: 'mathieu.bernard@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -109.5396,
-            lat: -17.7355,
-            string: "5963 grande rue champigny-sur-marne eure"
-        },
-        phone: "0242890565",
-        gender: 'M',
-        birthDate: new Date('1988-06-17T06:41:23Z')
-    },
-    {
-        id: 209,
-        password: 'bigdawg',
-        firstname: 'kiara',
-        lastname: 'berger',
-        email: 'kiara.berger@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 129.1061,
-            lat: 82.7370,
-            string: "1566 rue barrème limoges vendée"
-        },
-        phone: "0573914688",
-        gender: 'F',
-        birthDate: new Date('1980-07-27T06:57:41Z')
-    },
-    {
-        id: 200,
-        password: 'bradford',
-        firstname: 'lana',
-        lastname: 'legrand',
-        email: 'lana.legrand@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 149.5252,
-            lat: 53.7951,
-            string: "4375 avenue du château orléans ain"
-        },
-        phone: "0231851551",
-        gender: 'F',
-        birthDate: new Date('1986-12-11T19:27:23Z')
-    },
-    {
-        id: 189,
-        password: 'brodie',
-        firstname: 'lilly',
-        lastname: 'vidal',
-        email: 'lilly.vidal@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -62.0327,
-            lat: 51.7258,
-            string: "3064 rue de l'abbaye colombes nord"
-        },
-        phone: "0539827418",
-        gender: 'F',
-        birthDate: new Date('1988-01-13T02:00:54Z')
-    },
-    {
-        id: 498,
-        password: 'porn',
-        firstname: 'auguste',
-        lastname: 'michel',
-        email: 'auguste.michel@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -10.4477,
-            lat: -52.7206,
-            string: "8275 rue courbet courbevoie ain"
-        },
-        phone: "0577109025",
-        gender: 'M',
-        birthDate: new Date('1960-01-21T13:54:12Z')
-    },
-    {
-        id: 483,
-        password: 'hopeless',
-        firstname: 'ugo',
-        lastname: 'rey',
-        email: 'ugo.rey@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -109.5154,
-            lat: 87.6917,
-            string: "5868 rue de la fontaine vitry-sur-seine hautes-pyrénées"
-        },
-        phone: "0452683987",
-        gender: 'M',
-        birthDate: new Date('1949-04-24T05:09:29Z')
-    },
-    {
-        id: 936,
-        password: 'avatar',
-        firstname: 'norah',
-        lastname: 'durand',
-        email: 'norah.durand@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 6.0923,
-            lat: -52.8352,
-            string: "2758 montée du chemin-neuf le mans hauts-de-seine"
-        },
-        phone: "0140591658",
-        gender: 'F',
-        birthDate: new Date('1975-07-08T19:48:16Z')
-    },
-    {
-        id: 383,
-        password: 'stud',
-        firstname: 'victoire',
-        lastname: 'pierre',
-        email: 'victoire.pierre@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 27.2119,
-            lat: 1.1283,
-            string: "1751 rue duquesne nanterre val-d'oise"
-        },
-        phone: "0338731677",
-        gender: 'F',
-        birthDate: new Date('1945-05-02T08:08:36Z')
-    },
-    {
-        id: 995,
-        password: 'cigars',
-        firstname: 'valentine',
-        lastname: 'rousseau',
-        email: 'valentine.rousseau@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 42.0864,
-            lat: 40.5256,
-            string: "8824 place du 8 février 1962 aubervilliers loire"
-        },
-        phone: "0491857409",
-        gender: 'F',
-        birthDate: new Date('1960-09-27T03:42:26Z')
-    },
-    {
-        id: 92,
-        password: 'kkkkkk',
-        firstname: 'romain',
-        lastname: 'durand',
-        email: 'romain.durand@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 76.9854,
-            lat: 29.3079,
-            string: "2264 rue du moulin bordeaux marne"
-        },
-        phone: "0119366847",
-        gender: 'M',
-        birthDate: new Date('1978-06-14T07:44:41Z')
-    },
-    {
-        id: 636,
-        password: '8888',
-        firstname: 'gabin',
-        lastname: 'andre',
-        email: 'gabin.andre@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 142.2018,
-            lat: -75.6083,
-            string: "8094 rue de la charité avignon allier"
-        },
-        phone: "0548468242",
-        gender: 'M',
-        birthDate: new Date('1959-09-11T09:47:29Z')
-    },
-    {
-        id: 501,
-        password: 'taylor1',
-        firstname: 'lise',
-        lastname: 'aubert',
-        email: 'lise.aubert@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -32.0921,
-            lat: 24.1289,
-            string: "1176 rue baraban vitry-sur-seine bouches-du-rhône"
-        },
-        phone: "0498459109",
-        gender: 'F',
-        birthDate: new Date('1963-03-22T08:09:08Z')
-    },
-    {
-        id: 351,
-        password: 'browns',
-        firstname: 'daphné',
-        lastname: 'meyer',
-        email: 'daphné.meyer@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -171.4092,
-            lat: -10.0184,
-            string: "9407 rue pierre-delore mulhouse loiret"
-        },
-        phone: "0399647320",
-        gender: 'F',
-        birthDate: new Date('1964-11-21T16:17:45Z')
-    },
-    {
-        id: 761,
-        password: 'kellie',
-        firstname: 'damien',
-        lastname: 'brun',
-        email: 'damien.brun@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -109.5076,
-            lat: -14.2417,
-            string: "1608 rue de l'abbaye dijon hauts-de-seine"
-        },
-        phone: "0375125557",
-        gender: 'M',
-        birthDate: new Date('1985-10-02T14:24:08Z')
-    },
-    {
-        id: 626,
-        password: 'line',
-        firstname: 'clara',
-        lastname: 'michel',
-        email: 'clara.michel@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 157.7605,
-            lat: -84.5039,
-            string: "3109 rue principale le mans doubs"
-        },
-        phone: "0292177605",
-        gender: 'F',
-        birthDate: new Date('1957-01-01T06:54:49Z')
-    },
-    {
-        id: 79,
-        password: 'puppydog',
-        firstname: 'livia',
-        lastname: 'morin',
-        email: 'livia.morin@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -94.0576,
-            lat: -59.3768,
-            string: "6394 rue de l'abbé-gillet saint-pierre eure-et-loir"
-        },
-        phone: "0341076166",
-        gender: 'F',
-        birthDate: new Date('1987-02-10T23:28:47Z')
-    },
-    {
-        id: 851,
-        password: 'sally',
-        firstname: 'edouard',
-        lastname: 'leroux',
-        email: 'edouard.leroux@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -127.3537,
-            lat: 12.8138,
-            string: "4553 rue de l'abbé-soulange-bodin saint-denis moselle"
-        },
-        phone: "0349497529",
-        gender: 'M',
-        birthDate: new Date('1976-01-04T15:38:05Z')
-    },
-    {
-        id: 890,
-        password: '1269',
-        firstname: 'loris',
-        lastname: 'guillot',
-        email: 'loris.guillot@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -42.6971,
-            lat: 12.1921,
-            string: "9402 place des 44 enfants d'izieu toulouse pyrénées-atlantiques"
-        },
-        phone: "0522380256",
-        gender: 'M',
-        birthDate: new Date('1945-06-10T05:56:46Z')
-    },
-    {
-        id: 620,
-        password: 'abcd',
-        firstname: 'aymeric',
-        lastname: 'lucas',
-        email: 'aymeric.lucas@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 150.5734,
-            lat: 39.0369,
-            string: "3123 rue bossuet saint-étienne landes"
-        },
-        phone: "0370367492",
-        gender: 'M',
-        birthDate: new Date('1980-06-20T06:05:36Z')
-    },
-    {
-        id: 821,
-        password: 'tsunami',
-        firstname: 'melvin',
-        lastname: 'roger',
-        email: 'melvin.roger@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -127.7186,
-            lat: 11.8965,
-            string: "2880 place du 8 février 1962 lyon alpes-maritimes"
-        },
-        phone: "0110300975",
-        gender: 'M',
-        birthDate: new Date('1993-09-26T04:29:34Z')
-    },
-    {
-        id: 557,
-        password: 'elliott',
-        firstname: 'aloïs',
-        lastname: 'gautier',
-        email: 'aloïs.gautier@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -151.5323,
-            lat: -54.2878,
-            string: "9698 avenue de la république pau ille-et-vilaine"
-        },
-        phone: "0372848420",
-        gender: 'M',
-        birthDate: new Date('1944-11-25T05:29:19Z')
-    },
-    {
-        id: 276,
-        password: 'connect',
-        firstname: 'léane',
-        lastname: 'petit',
-        email: 'léane.petit@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 26.6660,
-            lat: 56.8569,
-            string: "8012 rue louis-garrand metz morbihan"
-        },
-        phone: "0281130006",
-        gender: 'F',
-        birthDate: new Date('1947-10-27T09:51:30Z')
-    },
-    {
-        id: 69,
-        password: 'manfred',
-        firstname: 'stella',
-        lastname: 'muller',
-        email: 'stella.muller@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: 106.1151,
-            lat: 46.1702,
-            string: "5821 rue de l'abbé-grégoire marseille alpes-de-haute-provence"
-        },
-        phone: "0436575405",
-        gender: 'F',
-        birthDate: new Date('1945-07-30T05:02:50Z')
-    },
-    {
-        id: 514,
-        password: 'audio',
-        firstname: 'maëline',
-        lastname: 'renaud',
-        email: 'maëline.renaud@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -16.6106,
-            lat: 88.3504,
-            string: "4756 rue dumenge saint-denis eure"
-        },
-        phone: "0187918605",
-        gender: 'F',
-        birthDate: new Date('1980-05-05T19:29:24Z')
-    },
-    {
-        id: 795,
-        password: 'everest',
-        firstname: 'lina',
-        lastname: 'roux',
-        email: 'lina.roux@example.com',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -79.1827,
-            lat: -2.6284,
-            string: "145 rue du village limoges charente-maritime"
-        },
-        phone: "0472028886",
-        gender: 'F',
-        birthDate: new Date('1969-07-26T00:40:21Z')
-    },
-    {
-        id: 125,
-        password: 'user',
-        firstname: 'Corentin',
-        lastname: 'Thomasset',
-        email: 'user@positif.fr',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Client,
-        address: {
-            lon: -79.1827,
-            lat: -2.6284,
-            string: "145 rue du village limoges charente-maritime"
-        },
-        phone: "0472028886",
-        gender: 'F',
-        birthDate: new Date('1969-07-26T00:40:21Z')
-    }
-];
-
-
-
-/***/ }),
-
-/***/ "./src/assets/dummyData/consultations.ts":
-/*!***********************************************!*\
-  !*** ./src/assets/dummyData/consultations.ts ***!
-  \***********************************************/
-/*! exports provided: consultations */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "consultations", function() { return consultations; });
-/* harmony import */ var _app_models__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../app/_models */ "./src/app/_models/index.ts");
-/* harmony import */ var _clients__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./clients */ "./src/assets/dummyData/clients.ts");
-/* harmony import */ var _employees__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./employees */ "./src/assets/dummyData/employees.ts");
-/* harmony import */ var _mediums__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./mediums */ "./src/assets/dummyData/mediums.ts");
-
-
-
-
-var randomClient = function () { return _clients__WEBPACK_IMPORTED_MODULE_1__["clients"][Math.floor(Math.random() * _clients__WEBPACK_IMPORTED_MODULE_1__["clients"].length)]; };
-var randomEmployee = function () { return _employees__WEBPACK_IMPORTED_MODULE_2__["employees"][Math.floor(Math.random() * _employees__WEBPACK_IMPORTED_MODULE_2__["employees"].length)]; };
-var randomMedium = function () { return _mediums__WEBPACK_IMPORTED_MODULE_3__["mediums"][Math.floor(Math.random() * _mediums__WEBPACK_IMPORTED_MODULE_3__["mediums"].length)]; };
-var meClient = _clients__WEBPACK_IMPORTED_MODULE_1__["clients"].find(function (x) { return x.lastname === 'Thomasset'; });
-var meEmployee = _employees__WEBPACK_IMPORTED_MODULE_2__["employees"].find(function (x) { return x.lastname === 'Thomasset'; });
-var consultations = [
-    {
-        client: meClient,
-        employee: meEmployee,
-        medium: randomMedium(),
-        state: _app_models__WEBPACK_IMPORTED_MODULE_0__["ConsultationState"].CLOSED,
-        createdAt: new Date(),
-        closedAt: new Date(),
-        answeredAt: new Date(),
-    },
-    {
-        client: meClient,
-        employee: meEmployee,
-        medium: randomMedium(),
-        state: _app_models__WEBPACK_IMPORTED_MODULE_0__["ConsultationState"].PENDING,
-        createdAt: new Date(),
-        answeredAt: new Date(),
-    },
-    {
-        client: meClient,
-        employee: meEmployee,
-        medium: randomMedium(),
-        state: _app_models__WEBPACK_IMPORTED_MODULE_0__["ConsultationState"].WAITING_VALIDATION,
-        createdAt: new Date(),
-    },
-    {
-        client: randomClient(),
-        employee: randomEmployee(),
-        medium: randomMedium(),
-        state: _app_models__WEBPACK_IMPORTED_MODULE_0__["ConsultationState"].CLOSED,
-        createdAt: new Date(),
-        closedAt: new Date(),
-        answeredAt: new Date(),
-    },
-    {
-        client: randomClient(),
-        employee: randomEmployee(),
-        medium: randomMedium(),
-        state: _app_models__WEBPACK_IMPORTED_MODULE_0__["ConsultationState"].CLOSED,
-        createdAt: new Date(),
-        closedAt: new Date(),
-        answeredAt: new Date(),
-    },
-    {
-        client: randomClient(),
-        employee: randomEmployee(),
-        medium: randomMedium(),
-        state: _app_models__WEBPACK_IMPORTED_MODULE_0__["ConsultationState"].CLOSED,
-        createdAt: new Date(),
-        closedAt: new Date(),
-        answeredAt: new Date(),
-    },
-    {
-        client: randomClient(),
-        employee: randomEmployee(),
-        medium: randomMedium(),
-        state: _app_models__WEBPACK_IMPORTED_MODULE_0__["ConsultationState"].CLOSED,
-        createdAt: new Date(),
-        closedAt: new Date(),
-        answeredAt: new Date(),
-    }
-];
-
-
-
-/***/ }),
-
-/***/ "./src/assets/dummyData/employees.ts":
-/*!*******************************************!*\
-  !*** ./src/assets/dummyData/employees.ts ***!
-  \*******************************************/
-/*! exports provided: employees */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "employees", function() { return employees; });
-/* harmony import */ var _app_models__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../app/_models */ "./src/app/_models/index.ts");
-
-// fetch('https://randomuser.me/api/?nat=fr&results=50')
-//   .then(data => data.json())
-//   .then(json => {
-//     console.log(json.results.reduce((acc, user) => {
-//
-//       const voice = user.gender == 'male' ? 'Voice.MASCULINE' : 'Voice.FEMININE';
-//       const experience = Math.random() > 0.5 ? 'Experience.SENIOR' : 'Experience.JUNIOR';
-//
-//       // acc += `PersonDao.persist(new Employee(${voice}, ${experience}, "${user.email}", "${user.name.first}", "${user.name.last}", "${gender}", "${user.login.password}", Date.from( Instant.parse("${user.dob.date}"))));\n`
-//
-//       acc += `
-//   {
-//     id: ${Math.floor(Math.random()*1000)},
-//     password: '${user.login.password}',
-//     firstname: '${user.name.first}',
-//     lastname: '${user.name.last}',
-//     email: '${user.email}',
-//     experience: ${experience},
-//     voice: ${voice},
-//     role: Role.Employee,
-//     gender: '${user.gender.toUpperCase().charAt(0)}',
-//     birthDate: new Date('${user.dob.date}')
-//   },`;
-//
-//       return acc;
-//     }, ''));
-//   });
-var employees = [
-    {
-        id: 363,
-        password: 'admin',
-        firstname: 'Corentin',
-        lastname: 'Thomasset',
-        email: 'admin@positif.fr',
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        gender: 'F',
-        birthDate: new Date('1969-07-26T00:40:21Z')
-    },
-    {
-        id: 585,
-        password: 'goofy',
-        firstname: 'luca',
-        lastname: 'brun',
-        email: 'luca.brun@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1955-08-16T14:26:14Z')
-    },
-    {
-        id: 18,
-        password: 'nadine',
-        firstname: 'elise',
-        lastname: 'gerard',
-        email: 'elise.gerard@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1961-01-25T21:52:52Z')
-    },
-    {
-        id: 843,
-        password: 'phoenix1',
-        firstname: 'léane',
-        lastname: 'gerard',
-        email: 'léane.gerard@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1974-12-25T15:37:54Z')
-    },
-    {
-        id: 565,
-        password: 'nana',
-        firstname: 'owen',
-        lastname: 'nicolas',
-        email: 'owen.nicolas@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1960-11-17T05:57:46Z')
-    },
-    {
-        id: 394,
-        password: '1919',
-        firstname: 'bérénice',
-        lastname: 'gonzalez',
-        email: 'bérénice.gonzalez@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1946-11-21T12:29:30Z')
-    },
-    {
-        id: 992,
-        password: 'november',
-        firstname: 'lyna',
-        lastname: 'lemoine',
-        email: 'lyna.lemoine@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1974-11-02T15:26:37Z')
-    },
-    {
-        id: 73,
-        password: 'stonecol',
-        firstname: 'alix',
-        lastname: 'leroy',
-        email: 'alix.leroy@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1966-06-21T11:12:21Z')
-    },
-    {
-        id: 359,
-        password: 'groovy',
-        firstname: 'axelle',
-        lastname: 'caron',
-        email: 'axelle.caron@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1967-07-08T19:44:01Z')
-    },
-    {
-        id: 471,
-        password: '3232',
-        firstname: 'mathis',
-        lastname: 'mathieu',
-        email: 'mathis.mathieu@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1983-07-12T15:40:11Z')
-    },
-    {
-        id: 228,
-        password: 'disco',
-        firstname: 'lana',
-        lastname: 'guerin',
-        email: 'lana.guerin@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1983-02-11T17:17:51Z')
-    },
-    {
-        id: 388,
-        password: 'lobster',
-        firstname: 'noam',
-        lastname: 'olivier',
-        email: 'noam.olivier@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1988-12-15T15:34:11Z')
-    },
-    {
-        id: 645,
-        password: 'rabbit',
-        firstname: 'célian',
-        lastname: 'deschamps',
-        email: 'célian.deschamps@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1956-12-05T10:40:34Z')
-    },
-    {
-        id: 400,
-        password: '0101',
-        firstname: 'léo',
-        lastname: 'jean',
-        email: 'léo.jean@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1959-02-18T06:15:55Z')
-    },
-    {
-        id: 295,
-        password: 'jupiter1',
-        firstname: 'owen',
-        lastname: 'lopez',
-        email: 'owen.lopez@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1957-12-04T17:23:37Z')
-    },
-    {
-        id: 342,
-        password: 'chun',
-        firstname: 'soren',
-        lastname: 'brunet',
-        email: 'soren.brunet@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1997-02-23T03:28:48Z')
-    },
-    {
-        id: 578,
-        password: 'stephanie',
-        firstname: 'noélie',
-        lastname: 'sanchez',
-        email: 'noélie.sanchez@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1984-01-13T19:58:16Z')
-    },
-    {
-        id: 840,
-        password: 'zoom',
-        firstname: 'damien',
-        lastname: 'fournier',
-        email: 'damien.fournier@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1973-09-27T09:58:38Z')
-    },
-    {
-        id: 657,
-        password: 'zack',
-        firstname: 'eva',
-        lastname: 'clement',
-        email: 'eva.clement@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1956-04-15T23:01:10Z')
-    },
-    {
-        id: 682,
-        password: 'mankind',
-        firstname: 'lyna',
-        lastname: 'morel',
-        email: 'lyna.morel@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1967-06-06T10:00:39Z')
-    },
-    {
-        id: 652,
-        password: 'hello1',
-        firstname: 'sélène',
-        lastname: 'morel',
-        email: 'sélène.morel@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1973-07-09T11:52:39Z')
-    },
-    {
-        id: 385,
-        password: 'teaser',
-        firstname: 'tessa',
-        lastname: 'arnaud',
-        email: 'tessa.arnaud@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1980-02-14T05:35:14Z')
-    },
-    {
-        id: 485,
-        password: 'pathfind',
-        firstname: 'maélie',
-        lastname: 'michel',
-        email: 'maélie.michel@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1960-08-18T14:19:42Z')
-    },
-    {
-        id: 75,
-        password: 'cruise',
-        firstname: 'eline',
-        lastname: 'perez',
-        email: 'eline.perez@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1988-09-05T12:31:01Z')
-    },
-    {
-        id: 568,
-        password: 'killbill',
-        firstname: 'garance',
-        lastname: 'dufour',
-        email: 'garance.dufour@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1996-01-14T11:17:07Z')
-    },
-    {
-        id: 920,
-        password: 'pass',
-        firstname: 'hadrien',
-        lastname: 'roger',
-        email: 'hadrien.roger@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1976-08-27T21:53:32Z')
-    },
-    {
-        id: 204,
-        password: 'windows1',
-        firstname: 'elisa',
-        lastname: 'adam',
-        email: 'elisa.adam@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1965-10-23T17:37:44Z')
-    },
-    {
-        id: 185,
-        password: 'scooter1',
-        firstname: 'rayan',
-        lastname: 'lopez',
-        email: 'rayan.lopez@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1964-12-27T01:18:57Z')
-    },
-    {
-        id: 641,
-        password: '1018',
-        firstname: 'louanne',
-        lastname: 'lemaire',
-        email: 'louanne.lemaire@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1989-03-29T12:47:58Z')
-    },
-    {
-        id: 330,
-        password: 'newness',
-        firstname: 'ugo',
-        lastname: 'rousseau',
-        email: 'ugo.rousseau@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1953-05-24T21:06:52Z')
-    },
-    {
-        id: 657,
-        password: 'openup',
-        firstname: 'matthieu',
-        lastname: 'martin',
-        email: 'matthieu.martin@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1957-07-11T06:51:30Z')
-    },
-    {
-        id: 777,
-        password: 'pppp',
-        firstname: 'mathias',
-        lastname: 'gaillard',
-        email: 'mathias.gaillard@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1989-12-31T04:17:34Z')
-    },
-    {
-        id: 106,
-        password: '12345a',
-        firstname: 'tess',
-        lastname: 'roger',
-        email: 'tess.roger@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1977-03-06T17:14:11Z')
-    },
-    {
-        id: 881,
-        password: 'hornet',
-        firstname: 'alicia',
-        lastname: 'durand',
-        email: 'alicia.durand@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1983-03-16T14:14:47Z')
-    },
-    {
-        id: 711,
-        password: 'kuai',
-        firstname: 'lucy',
-        lastname: 'lambert',
-        email: 'lucy.lambert@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1974-01-18T16:44:43Z')
-    },
-    {
-        id: 261,
-        password: 'rusty2',
-        firstname: 'rayan',
-        lastname: 'renaud',
-        email: 'rayan.renaud@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1995-04-08T23:43:45Z')
-    },
-    {
-        id: 821,
-        password: 'bruce',
-        firstname: 'alexia',
-        lastname: 'leclerc',
-        email: 'alexia.leclerc@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1965-09-09T14:36:56Z')
-    },
-    {
-        id: 797,
-        password: 'cosworth',
-        firstname: 'gabriel',
-        lastname: 'deschamps',
-        email: 'gabriel.deschamps@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1978-06-23T09:24:03Z')
-    },
-    {
-        id: 268,
-        password: '5454',
-        firstname: 'roméo',
-        lastname: 'dumas',
-        email: 'roméo.dumas@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1995-05-19T18:32:57Z')
-    },
-    {
-        id: 999,
-        password: 'kingdom',
-        firstname: 'lou',
-        lastname: 'martin',
-        email: 'lou.martin@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1964-09-07T21:40:37Z')
-    },
-    {
-        id: 635,
-        password: 'sadie1',
-        firstname: 'louna',
-        lastname: 'duval',
-        email: 'louna.duval@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1979-03-31T10:25:06Z')
-    },
-    {
-        id: 833,
-        password: 'jetta',
-        firstname: 'louanne',
-        lastname: 'da silva',
-        email: 'louanne.dasilva@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1958-01-21T08:30:27Z')
-    },
-    {
-        id: 955,
-        password: 'lucy',
-        firstname: 'lohan',
-        lastname: 'dumont',
-        email: 'lohan.dumont@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].SENIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1953-07-20T19:33:47Z')
-    },
-    {
-        id: 483,
-        password: 'theman',
-        firstname: 'charlie',
-        lastname: 'olivier',
-        email: 'charlie.olivier@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1960-02-09T20:57:30Z')
-    },
-    {
-        id: 205,
-        password: 'helena',
-        firstname: 'dylan',
-        lastname: 'moulin',
-        email: 'dylan.moulin@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1986-10-27T02:08:41Z')
-    },
-    {
-        id: 53,
-        password: 'albatros',
-        firstname: 'malone',
-        lastname: 'schmitt',
-        email: 'malone.schmitt@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1995-01-27T03:16:27Z')
-    },
-    {
-        id: 746,
-        password: 'nasty',
-        firstname: 'fabio',
-        lastname: 'blanc',
-        email: 'fabio.blanc@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1963-12-29T16:02:38Z')
-    },
-    {
-        id: 263,
-        password: 'kestrel',
-        firstname: 'maëly',
-        lastname: 'andre',
-        email: 'maëly.andre@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1987-04-24T22:13:47Z')
-    },
-    {
-        id: 329,
-        password: 'patriot',
-        firstname: 'enola',
-        lastname: 'muller',
-        email: 'enola.muller@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].FEMININE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'F',
-        birthDate: new Date('1950-10-14T02:08:38Z')
-    },
-    {
-        id: 766,
-        password: 'buckeye',
-        firstname: 'mahé',
-        lastname: 'garcia',
-        email: 'mahé.garcia@example.com',
-        experience: _app_models__WEBPACK_IMPORTED_MODULE_0__["Experience"].JUNIOR,
-        voice: _app_models__WEBPACK_IMPORTED_MODULE_0__["Voice"].MASCULINE,
-        role: _app_models__WEBPACK_IMPORTED_MODULE_0__["Role"].Employee,
-        gender: 'M',
-        birthDate: new Date('1983-02-06T20:07:53Z')
-    }
-];
-
-
-
-/***/ }),
-
-/***/ "./src/assets/dummyData/index.ts":
-/*!***************************************!*\
-  !*** ./src/assets/dummyData/index.ts ***!
-  \***************************************/
-/*! exports provided: mediums, employees, clients, consultations */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _mediums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mediums */ "./src/assets/dummyData/mediums.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "mediums", function() { return _mediums__WEBPACK_IMPORTED_MODULE_0__["mediums"]; });
-
-/* harmony import */ var _clients__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./clients */ "./src/assets/dummyData/clients.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "clients", function() { return _clients__WEBPACK_IMPORTED_MODULE_1__["clients"]; });
-
-/* harmony import */ var _employees__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./employees */ "./src/assets/dummyData/employees.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "employees", function() { return _employees__WEBPACK_IMPORTED_MODULE_2__["employees"]; });
-
-/* harmony import */ var _consultations__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./consultations */ "./src/assets/dummyData/consultations.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "consultations", function() { return _consultations__WEBPACK_IMPORTED_MODULE_3__["consultations"]; });
-
-
-
-
-
-
-
-
-/***/ }),
-
-/***/ "./src/assets/dummyData/mediums.ts":
-/*!*****************************************!*\
-  !*** ./src/assets/dummyData/mediums.ts ***!
-  \*****************************************/
-/*! exports provided: mediums */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mediums", function() { return mediums; });
-var mediums = [
-    {
-        id: 1,
-        name: "Gwenaël",
-        talent: "FORTUNE_TELLER",
-        description: "Spécialiste des grandes conversatons au-delà de TOUTES les frontrres.",
-        imageUrl: "https://react.semantic-ui.com/images/avatar/large/matthew.png"
-    },
-    {
-        id: 2,
-        name: "Professeur Maxwell",
-        talent: "FORTUNE_TELLER",
-        description: "Votre avenir est devant vous : regardons-le ensemble !",
-        imageUrl: "https://semantic-ui.com/images/avatar2/large/mark.png"
-    },
-    {
-        id: 3,
-        name: "Mme Irma",
-        talent: "TAROT_READER",
-        description: "Comprenez votre entourage grâce à mes cartes ! Résultats rapides.",
-        imageUrl: "https://semantic-ui.com/images/avatar2/large/kristy.png"
-    },
-    {
-        id: 4,
-        name: "Endora",
-        talent: "TAROT_READER",
-        description: "Mes cartes répondront à toutes vos questons personnelles.",
-        imageUrl: "https://semantic-ui.com/images/avatar2/large/elyse.png"
-    },
-    {
-        id: 5,
-        name: "Serena",
-        talent: "ASTROLOGIST",
-        description: "Basée à Champigny-sur-Marne, Serena vous révrlera votre avenir pour éclairer votre passé.",
-        imageUrl: "https://react.semantic-ui.com/images/avatar/large/stevie.jpg"
-    },
-    {
-        id: 7,
-        name: "Mme Potiron",
-        talent: "TAROT_READER",
-        description: "Mes cartes devoilleront votre avenir!",
-        imageUrl: "https://react.semantic-ui.com/images/avatar/large/molly.png"
-    },
-    {
-        id: 6,
-        name: "Mr M. Histaire-Hyeux",
-        talent: "ASTROLOGIST",
-        description: "Avenir, avenir, que nous réserves-tu? N'atendez plus, demandez à me consulter!",
-        imageUrl: "https://react.semantic-ui.com/images/avatar/large/steve.jpg"
-    },
-    {
-        id: 8,
-        name: "Mr Pierre Edouard Pidou",
-        talent: "TAROT_READER",
-        description: "Je vous prédirai votre chemin optimal",
-        imageUrl: "http://smtb.cbl-web.com/images/avatar/big/elliot.jpg"
-    },
-    {
-        id: 9,
-        name: "Mme Loupicka",
-        talent: "ASTROLOGIST",
-        description: "Art divinatoir, grace aux astres je vous dirait tout sur votre avenir.",
-        imageUrl: "http://smtb.cbl-web.com/images/avatar/big/jenny.jpg"
-    },
-    {
-        id: 10,
-        name: "Professeur Soko",
-        talent: "ASTROLOGIST",
-        description: "Grand voyant medium.",
-        imageUrl: "https://semantic-ui.com/images/avatar/large/joe.jpg"
-    }
-];
-
-
-
-/***/ }),
-
 /***/ "./src/environments/environment.ts":
 /*!*****************************************!*\
   !*** ./src/environments/environment.ts ***!
@@ -4599,7 +2898,7 @@ __webpack_require__.r(__webpack_exports__);
 // The list of file replacements can be found in `angular.json`.
 var environment = {
     production: false,
-    apiUrl: 'http://my-api-url'
+    apiUrl: 'http://localhost:8080/positif-backend/ActionServlet'
 };
 /*
  * For easier debugging in development mode, you can import the following file

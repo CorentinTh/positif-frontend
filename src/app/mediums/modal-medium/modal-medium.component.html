@@ -1,4 +1,3 @@
-
 <div fxLayoutAlign="center">
   <mat-spinner *ngIf="!medium"></mat-spinner>
 </div>
@@ -9,11 +8,26 @@
   </h1>
   <div mat-dialog-content>
 
-    {{medium.description}}
+
+    <div fxLayout="row">
+      <div fxFlex="30">
+
+        <img class="medium-image" [src]="medium.picturePath" alt="">
+      </div>
+
+      <div fxFlex="70" class="medium-details">
+        <div><strong>Type : </strong> {{medium.talent | talent | capitalize}}</div>
+        <div *ngIf="medium.speciality"><strong>Specialité : </strong> {{medium.speciality | capitalize}}</div>
+        <div *ngIf="medium.training"><strong>Ecole : </strong> {{medium.training}}</div>
+        <div *ngIf="medium.schoolYear"><strong>Promotion : </strong> {{medium.schoolYear}}</div>
+        <div>{{medium.description}}</div>
+      </div>
+    </div>
+
 
   </div>
 
   <div mat-dialog-actions>
-    <button mat-raised-button color="primary" >Demander une consultation</button>
+    <button mat-raised-button color="primary" (click)="consultationCallback(medium)">Demander une consultation</button>
   </div>
 </div>

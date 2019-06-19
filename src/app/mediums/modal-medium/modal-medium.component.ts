@@ -12,11 +12,13 @@ export class ModalMediumComponent implements OnInit {
 
   mediumID : number;
   medium : Medium;
+  consultationCallback : Function;
 
   constructor(@Inject(MAT_DIALOG_DATA) public config, public mediumService : MediumService) {
     this.mediumID = config.id;
+    this.consultationCallback = config.consultationCallback;
 
-    mediumService.getById(this.mediumID).subscribe((mediums) => this.medium = mediums);
+    mediumService.getById(this.mediumID).subscribe((mediums) => console.log(this.medium = mediums));
   }
 
   ngOnInit() {

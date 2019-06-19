@@ -38,17 +38,17 @@
 
       <mat-card>
         <div class="mat-card-image-container">
-          <img mat-card-image [src]="medium.imageUrl" alt="Medium profile picture">
+          <img mat-card-image [src]="medium.picturePath" alt="Medium profile picture">
         </div>
         <mat-card-title>{{medium.name}}</mat-card-title>
-        <mat-card-subtitle>{{medium.talent}}</mat-card-subtitle>
+        <mat-card-subtitle>{{medium.talent | talent | capitalize}}</mat-card-subtitle>
         <mat-card-content>{{medium.description}} </mat-card-content>
 
 
         <mat-card-actions>
           <div fxLayout.gt-md="row" fxLayoutAlign="space-between" fxLayout.lt-md="column">
             <button mat-raised-button (click)="openModal(medium.id)">Details</button>
-            <button mat-raised-button color="primary" style="margin: 0;">Consulter</button>
+            <button mat-raised-button (click)="setConsultation(medium)" color="primary" style="margin: 0;">Consulter</button>
           </div>
         </mat-card-actions>
       </mat-card>
@@ -57,3 +57,4 @@
 
   </div>
 </div>
+

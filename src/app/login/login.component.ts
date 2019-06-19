@@ -50,8 +50,6 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.invalid) {
       return;
     }
-    console.log(this.f.email.value);
-    console.log(this.f.password.value);
 
     this.loading = true;
     this.authenticationService
@@ -59,7 +57,12 @@ export class LoginComponent implements OnInit {
       .pipe(first())
       .subscribe(
         data => {
-          this.router.navigate([this.returnUrl]);
+          if(data){
+            this.router.navigate([this.returnUrl]);
+          }else{
+            this.error = 'Identifiants inccorects';
+            this.loading = false;
+          }
         },
         error => {
           this.error = error;

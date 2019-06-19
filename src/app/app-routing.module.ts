@@ -12,6 +12,7 @@ import {ProfileComponent} from "./profile/profile.component";
 import {RegisterComponent} from "./register/register.component";
 import {StatisticsComponent} from "./statistics/statistics.component";
 import {ConsultationsComponent} from "./consultations/consultations.component";
+import {CurrentConsultationComponent} from "./current-consultation/current-consultation.component";
 
 const routes: Routes = [
   {
@@ -87,7 +88,13 @@ const routes: Routes = [
         component: ConsultationsComponent,
         canActivate: [AuthGuard],
         data: {roles: [Role.Employee]},
-      }
+      },
+      {
+        path: 'current',
+        component: CurrentConsultationComponent,
+        canActivate: [AuthGuard],
+        data: {roles: [Role.Employee]},
+      },
     ]
   },
   {

@@ -3,5 +3,8 @@ export class Medium {
   name: string;
   talent: string;
   description: string;
-  imageUrl: string;
+  picturePath: string;
+  training?:string;
+  schoolYear?:string;
+  speciality?:string;
 }

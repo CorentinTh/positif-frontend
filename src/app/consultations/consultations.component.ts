@@ -19,20 +19,31 @@ export class ConsultationsComponent implements OnInit {
   displayedColumns = ['state', 'createdAt', 'medium', 'client', 'actions'];
 
   constructor(private consultationService: ConsultationService, public route: ActivatedRoute, public router: Router, public userService: UserService, public modal: MatDialog) {
+
     if (this.router.url.match(/\/consultations\/user\/\d+$/)) {
+      // Employee wants to see consultation of an user
+
       this.route.paramMap.subscribe(p => {
-        this.userService.getById(parseInt(p.get('id'))).subscribe(user => this.getConsultations(user));
+        this.userService.getById(parseInt(p.get('id'))).subscribe(user =>{
+          if (user) {
+            this.user = user;
+            this.consultationService.getAllByUser(this.user).subscribe(consultations => console.log(this.consultations = consultations));
+          } else {
+            this.error = 'L\'utilisateur demandé n\'existe pas.';
+          }
+        });
       });
     } else if (this.router.url.match(/\/consultations\/\d+$/)) {
+      // Someone want to get the details of a consultation
 
       this.route.children[0].paramMap.subscribe(p => {
         this.openModal(parseInt(p.get('id')));
       });
 
-      this.userService.getCurrent().subscribe(user => this.getConsultations(user));
+      this.consultationService.getAllByCurrentUser().subscribe(consultations => console.log(this.consultations = consultations))
 
     } else {
-      this.userService.getCurrent().subscribe(user => this.getConsultations(user));
+      this.consultationService.getAllByCurrentUser().subscribe(consultations => console.log(this.consultations = consultations))
     }
   }
 
@@ -40,19 +51,14 @@ export class ConsultationsComponent implements OnInit {
 
   }
 
-  getConsultations(user: User) {
-    if (user) {
-      this.user = user;
-
-      if (this.user.role === Role.Employee) {
-        this.consultationService.getAllByEmployeeId(this.user.id).subscribe(consultations => console.log(this.consultations = consultations));
-      } else {
-        this.consultationService.getAllByClientId(this.user.id).subscribe(consultations => console.log(this.consultations = consultations));
-      }
-    } else {
-      this.error = 'L\'utilisateur demandé n\'existe pas.';
-    }
-  }
+  // getConsultations(user: User) {
+  //   if (user) {
+  //     this.user = user;
+  //     this.consultationService.getAllByUser(this.user).subscribe(consultations => console.log(this.consultations = consultations));
+  //   } else {
+  //     this.error = 'L\'utilisateur demandé n\'existe pas.';
+  //   }
+  // }
 
   private openModal(id: number) {
     this.router.navigate([id], {relativeTo: this.route});

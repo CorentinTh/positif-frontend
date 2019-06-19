@@ -36,7 +36,22 @@ import {Client, Role, User} from "../../app/_models";
 
 
 const clients: Client[] = [
-
+  {
+    id: 125,
+    password: 'user',
+    firstname: 'Corentin',
+    lastname: 'Thomasset',
+    email: 'user@positif.fr',
+    role: Role.Client,
+    address: {
+      lon: -79.1827,
+      lat: -2.6284,
+      string:"145 rue du village limoges charente-maritime"
+    },
+    phone:"0472028886",
+    gender: 'F',
+    birthDate: new Date('1969-07-26T00:40:21Z')
+  },
   {
     id: 751,
     password: 'keith',
@@ -827,22 +842,6 @@ const clients: Client[] = [
     firstname: 'lina',
     lastname: 'roux',
     email: 'lina.roux@example.com',
-    role: Role.Client,
-    address: {
-      lon: -79.1827,
-      lat: -2.6284,
-      string:"145 rue du village limoges charente-maritime"
-    },
-    phone:"0472028886",
-    gender: 'F',
-    birthDate: new Date('1969-07-26T00:40:21Z')
-  },
-  {
-    id: 125,
-    password: 'user',
-    firstname: 'Corentin',
-    lastname: 'Thomasset',
-    email: 'user@positif.fr',
     role: Role.Client,
     address: {
       lon: -79.1827,
