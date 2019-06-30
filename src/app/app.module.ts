@@ -21,7 +21,7 @@ import {
   MatProgressSpinnerModule,
   MatRadioModule,
   MatSelectModule,
-  MatSidenavModule,
+  MatSidenavModule, MatSliderModule,
   MatSnackBar,
   MatSnackBarContainer,
   MatSnackBarModule,
@@ -59,6 +59,8 @@ import { TimeAgoPipe } from './_pipes/time-ago.pipe';
 import { ModalConsultationComponent } from './consultations/modal-consultation/modal-consultation.component';
 import { TalentPipe } from './_pipes/talent.pipe';
 import { CurrentConsultationComponent } from './current-consultation/current-consultation.component';
+import {LineChartComponent} from "./_components/line-chart/line-chart.component";
+import {PieChartComponent} from "./_components/pie-chart/pie-chart.component";
 
 @NgModule({
   entryComponents: [
@@ -88,6 +90,8 @@ import { CurrentConsultationComponent } from './current-consultation/current-con
     ModalConsultationComponent,
     TalentPipe,
     CurrentConsultationComponent,
+    LineChartComponent,
+    PieChartComponent
   ],
   imports: [
     BrowserModule,
@@ -121,7 +125,8 @@ import { CurrentConsultationComponent } from './current-consultation/current-con
     MatDatepickerModule,
     MatNativeDateModule,
     MatRadioModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatSliderModule
   ],
   providers: [
     MatDatepickerModule,
