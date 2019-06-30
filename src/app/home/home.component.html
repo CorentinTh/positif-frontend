@@ -1,3 +1,5 @@
 <div class="section-container" *ngIf="currentUser">
-  <h1>Bonjour {{currentUser.firstname}} !</h1>
+  <h1>Bonjour {{currentUser.firstname | capitalize}} {{currentUser.lastname | capitalize}} !</h1>
+
+
 </div>

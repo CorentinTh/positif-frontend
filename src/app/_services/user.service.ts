@@ -17,11 +17,11 @@ export class UserService {
     }));
   }
 
-  getById(id: number): Observable<User> {
-    return this.http.get<any>(`${environment.apiUrl}?do=getUser&id=${id}`).pipe(map(result => {
-      return result.user;
-    }));
-  }
+  // getById(id: number): Observable<User> {
+  //   return this.http.get<any>(`${environment.apiUrl}?do=getUser&id=${id}`).pipe(map(result => {
+  //     return result.user;
+  //   }));
+  // }
 
   getCurrent(): Observable<User> {
     return this.http.get<any>(`${environment.apiUrl}?do=getCurrentUser`).pipe(map(result => {

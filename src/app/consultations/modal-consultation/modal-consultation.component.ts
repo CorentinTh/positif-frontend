@@ -14,9 +14,11 @@ export class ModalConsultationComponent implements OnInit {
   consultationID: number;
   consultation: Consultation;
   user : User;
+  acceptConsultation;
 
   constructor(@Inject(MAT_DIALOG_DATA) public config, public consultationService : ConsultationService, public authenticationService : AuthenticationService) {
     this.consultationID = config.id;
+    this.acceptConsultation = config.acceptConsultation;
     this.user = this.authenticationService.currentUserValue;
     consultationService.getOneById(this.consultationID).subscribe(c => this.consultation = c);
   }

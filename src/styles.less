@@ -39,8 +39,8 @@ body {
 
 .badge{
   transition: box-shadow 280ms cubic-bezier(.4,0,.2,1);
-  padding: 7px 12px;
-  border-radius: 16px;
+  padding: 9px 15px;
+  border-radius: 50px;
   align-items: center;
   cursor: default;
   min-height: 32px;
@@ -63,4 +63,30 @@ body {
     color: #fff;
   }
 
+}
+.mat-flat-button.mat-success{
+  color: #ffffff;
+  background-color: @success;
+}
+
+table.table-formating{
+
+  &.w50{
+    tr{
+      td{
+        width: 50%;
+      }
+    }
+  }
+
+  width: 100%;
+  tr{
+    td{
+      &:first-child{
+        padding-right: 10px;
+        text-align: right;
+      }
+    }
+
+  }
 }

@@ -22,8 +22,14 @@
 
         <mat-card-content>
           <mat-list>
-            <mat-list-item><strong>Nom: </strong> {{user.lastname | capitalize}}</mat-list-item>
-            <mat-list-item><strong>Prénom: </strong>{{user.firstname | capitalize}}</mat-list-item>
+            <mat-list-item><strong>Nom : </strong> {{user.lastname | capitalize}}</mat-list-item>
+            <mat-list-item><strong>Prénom : </strong>{{user.firstname | capitalize}}</mat-list-item>
+            <mat-list-item><strong>Date de naissance : </strong>{{user.birthDate | date:'dd/MM/yyyy'}}</mat-list-item>
+            <mat-list-item *ngIf="user.astralProfil"><strong>Signe du Zodiac : </strong>{{user.astralProfil.zodiacSign}}</mat-list-item>
+            <mat-list-item *ngIf="user.astralProfil"><strong>Signe chinois : </strong>{{user.astralProfil.chineseSign}}</mat-list-item>
+            <mat-list-item *ngIf="user.astralProfil"><strong>Couleur : </strong>{{user.astralProfil.color}}</mat-list-item>
+            <mat-list-item *ngIf="user.astralProfil"><strong>Animal totem : </strong>{{user.astralProfil.animal}}</mat-list-item>
+
           </mat-list>
         </mat-card-content>
       </mat-card>

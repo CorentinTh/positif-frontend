@@ -87,5 +87,11 @@
 
   <div mat-dialog-actions>
     <button mat-stroked-button color="primary">Fermer</button>
+    <button mat-flat-button color="success" matTooltip="Accepter la consultation"
+            (click)="acceptConsultation(consultation)"
+            *ngIf="consultation.state === 'WAITING_VALIDATION'  && authenticationService.currentUserValue.role === 'Employee'">
+      Accepter
+    </button>
+
   </div>
 </div>

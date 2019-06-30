@@ -19,7 +19,8 @@ const routes: Routes = [
     path: '',
     component: HomeComponent,
     canActivate: [AuthGuard],
-    data: {roles: [Role.Employee, Role.Client]}
+    data: {roles: [Role.Employee, Role.Client]},
+    pathMatch: 'full'
   },
   {
     path: 'about',
@@ -72,6 +73,12 @@ const routes: Routes = [
     data: {roles: [Role.Employee, Role.Client]} // TODO: change to Employee only
   },
   {
+    path: 'consultations/current',
+    component: CurrentConsultationComponent,
+    canActivate: [AuthGuard],
+    data: {roles: [Role.Employee]},
+  },
+  {
     path: 'consultations',
     component: ConsultationsComponent,
     canActivate: [AuthGuard],
@@ -88,13 +95,7 @@ const routes: Routes = [
         component: ConsultationsComponent,
         canActivate: [AuthGuard],
         data: {roles: [Role.Employee]},
-      },
-      {
-        path: 'current',
-        component: CurrentConsultationComponent,
-        canActivate: [AuthGuard],
-        data: {roles: [Role.Employee]},
-      },
+      }
     ]
   },
   {

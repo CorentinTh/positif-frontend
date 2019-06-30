@@ -1,3 +1,215 @@
-<p>
-  current-consultation works!
-</p>
+<app-page-header>Consultation en cours</app-page-header>
+
+<div class="section-container">
+
+
+  <div fxLayoutAlign="center" *ngIf="!consultation">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div fxLayout="row" fxLayoutGap="25px" *ngIf="consultation">
+
+    <div fxFlex="33">
+      <div fxLayout="column" fxLayoutGap="25px">
+        <mat-card>
+
+          <mat-card-header>
+            <h2>Client</h2>
+          </mat-card-header>
+          <mat-card-content >
+
+            <div style="text-align: center">
+              <strong >{{consultation.client.firstname | capitalize}} {{consultation.client.lastname | capitalize}} ({{consultation.client.birthDate | date:'dd/MM/yyyy'}})</strong>
+            </div>
+            <br>
+            <table class="table-formating w50">
+              <tr>
+                <td><strong>Signe du Zodiac : </strong></td>
+                <td>{{consultation.client.astralProfil.zodiacSign}}</td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>Signe chinois : </strong>
+                </td>
+                <td>{{consultation.client.astralProfil.chineseSign}}</td>
+              </tr>
+              <tr>
+                <td><strong>Couleur : </strong></td>
+                <td>{{consultation.client.astralProfil.color}}</td>
+              </tr>
+              <tr>
+                <td><strong>Animal totem : </strong></td>
+                <td>{{consultation.client.astralProfil.animal}}</td>
+              </tr>
+            </table>
+
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card>
+
+          <mat-card-header>
+            <h2>Medium</h2>
+          </mat-card-header>
+          <mat-card-content>
+
+            <div fxLayout="row">
+              <div fxFlex="30">
+                <img class="medium-image" [src]="consultation.medium.picturePath" alt="">
+              </div>
+
+              <div fxFlex="70" class="medium-details">
+                <div><strong>Nom : </strong> {{consultation.medium.name | capitalize}}</div>
+                <div><strong>Type : </strong> {{consultation.medium.talent | talent | capitalize}}</div>
+                <div><strong>Voix : </strong> {{consultation.medium.voiceType.toLowerCase() | capitalize}}</div>
+                <div *ngIf="consultation.medium.speciality">
+                  <strong>Specialité: </strong> {{consultation.medium.speciality | capitalize}}</div>
+                <div *ngIf="consultation.medium.training"><strong>Ecole : </strong> {{consultation.medium.training}}
+                </div>
+                <div *ngIf="consultation.medium.schoolYear">
+                  <strong>Promotion: </strong> {{consultation.medium.schoolYear}}</div>
+                <div>{{consultation.medium.description}}</div>
+              </div>
+            </div>
+
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+    </div>
+
+    <div fxFlex="33">
+
+      <mat-card>
+
+        <mat-card-header>
+          <h2> Predictions </h2>
+        </mat-card-header>
+        <mat-card-content>
+
+          <div fxLayout="row" class="slider-container" fxLayoutAlign="center center">
+            <div fxFlex="33" fxLayout="column" fxLayoutAlign="center center">
+              <p>Amour</p>
+              <mat-slider
+                max="4"
+                min="1"
+                step="1"
+                color="primary"
+                vertical
+                [(ngModel)]="loveLevel"
+                (change)="getNewPredictions()"
+              ></mat-slider>
+            </div>
+            <div fxFlex="33" fxLayout="column" fxLayoutAlign="center center">
+              <p>Santé</p>
+              <mat-slider
+                max="4"
+                min="1"
+                step="1"
+                color="primary"
+                vertical
+                [(ngModel)]="healthLevel"
+                (change)="getNewPredictions()"
+              ></mat-slider>
+            </div>
+            <div fxFlex="33" fxLayout="column" fxLayoutAlign="center center">
+              <p>Travail</p>
+              <mat-slider
+                max="4"
+                min="1"
+                step="1"
+                color="primary"
+                vertical
+                [(ngModel)]="workLevel"
+                (change)="getNewPredictions()"
+              ></mat-slider>
+            </div>
+          </div>
+
+          <div fxLayout="row" fxLayoutAlign="center center" style="margin-bottom: 25px">
+            <button mat-stroked-button color="primary" matTooltip="Niveaux aléatoires" (click)="randomLevel()">
+              <mat-icon>shuffle</mat-icon>
+            </button>
+            &nbsp;
+            <button mat-stroked-button color="primary" matTooltip="Actualiser" (click)="getNewPredictions()">
+              <mat-icon>refresh</mat-icon>
+            </button>
+
+          </div>
+          <mat-divider></mat-divider>
+          <div class="predictions-container" *ngIf="predictions">
+            <p><strong>Amour (niveau {{loveLevel}}) : </strong> {{lovePrediction.content}}</p>
+            <p><strong>Santé (niveau {{healthLevel}}) : </strong> {{healthPrediction.content}}</p>
+            <p><strong>Travail (niveau {{workLevel}}) : </strong> {{workPrediction.content}}</p>
+
+            <div fxLayoutAlign="center" *ngIf="!predictions">
+              <mat-spinner></mat-spinner>
+            </div>
+          </div>
+
+
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div fxFlex="33">
+      <mat-card>
+        <mat-card-header>
+          <h2>Consultation</h2>
+        </mat-card-header>
+
+        <mat-card-content>
+
+          <table class="table-formating">
+            <tr>
+              <td><strong>Créé le : </strong></td>
+              <td>{{consultation.createdAt | date:'dd/MM/yyyy - hh:mm'}}</td>
+            </tr>
+            <tr>
+              <td><strong>Accepté le : </strong></td>
+              <td>{{consultation.answeredAt | date:'dd/MM/yyyy - hh:mm'}}</td>
+            </tr>
+          </table>
+          <br>
+
+          <mat-divider></mat-divider>
+          <br>
+
+          <mat-form-field>
+            <input matInput type="text" placeholder="Commentaire"  [(ngModel)]="closeComment"/>
+          </mat-form-field>
+
+
+          <div fxLayout="row" fxLayoutGap="15px">
+
+
+            <div fxFlex="50">
+              <mat-form-field>
+                <input matInput [matDatepicker]="endDatePicker" placeholder="Date de fin"  [(ngModel)]="closeDate">
+                <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #endDatePicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="50">
+              <mat-form-field>
+                <input matInput type="time" placeholder="Heure de fin"  [(ngModel)]="closeTime" />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <br>
+
+          <div fxLayoutAlign="center" fxLayout="row">
+            <button mat-raised-button color="primary" (click)="closeConsultation()">Terminer la consultation</button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+
+    </div>
+  </div>
+
+
+
+</div>

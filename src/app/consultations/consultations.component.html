@@ -18,7 +18,6 @@
         <span class="badge badge-success" *ngIf="element.state === 'PENDING'">En cours</span>
         <span class="badge badge-primary" *ngIf="element.state === 'WAITING_VALIDATION'">En attente</span>
         <span class="badge badge-grey" *ngIf="element.state === 'CLOSED'">Terminée</span>
-
       </td>
     </ng-container>
 
@@ -38,9 +37,11 @@
     </ng-container>
 
     <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Client</th>
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
       <td mat-cell *matCellDef="let element">
-        <button mat-stroked-button color="primary"(click)="openModal(element.id)"> Details</button>
+        <button mat-flat-button  color="primary" matTooltip="Details" (click)="openModal(element.id)"><mat-icon>list</mat-icon></button>
+        &nbsp;
+        <button mat-flat-button  color="success" matTooltip="Accepter la consultation" (click)="acceptConsultation(element)" *ngIf="element.state === 'WAITING_VALIDATION' && authService.currentUserValue.role === 'Employee'"><mat-icon>done</mat-icon></button>
       </td>
     </ng-container>
 

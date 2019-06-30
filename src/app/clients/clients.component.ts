@@ -10,7 +10,7 @@ import {ClientService} from "../_services/client.service";
 })
 export class ClientsComponent implements OnInit {
 
-  displayedColumns: string[] = ['firstname', 'lastname', 'gender', 'email', 'phone', 'birthDate'];
+  displayedColumns: string[] = ['firstname', 'lastname', 'gender', 'email', 'phone', 'birthDate', 'actions'];
   clients: Client[];
   searchQuery: String;
 

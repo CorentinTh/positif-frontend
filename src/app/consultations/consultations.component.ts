@@ -3,8 +3,10 @@ import {ConsultationService} from "../_services/consultation.service";
 import {Consultation, Role, User} from "../_models";
 import {ActivatedRoute, Router} from "@angular/router";
 import {UserService} from "../_services/user.service";
-import {MatDialog} from "@angular/material";
+import {MatDialog, MatSnackBar} from "@angular/material";
 import {ModalConsultationComponent} from "./modal-consultation/modal-consultation.component";
+import {ClientService} from "../_services/client.service";
+import {AuthenticationService} from "../_services/authentication.service";
 
 @Component({
   selector: 'app-consultations',
@@ -16,15 +18,23 @@ export class ConsultationsComponent implements OnInit {
   user: User;
   error: String;
   consultations: Consultation[];
-  displayedColumns = ['state', 'createdAt', 'medium', 'client', 'actions'];
+  displayedColumns = ['state', 'createdAt', 'medium'];
 
-  constructor(private consultationService: ConsultationService, public route: ActivatedRoute, public router: Router, public userService: UserService, public modal: MatDialog) {
+  constructor(public snack: MatSnackBar, private consultationService: ConsultationService, public route: ActivatedRoute, public router: Router, public clientService: ClientService, public modal: MatDialog, public authService: AuthenticationService) {
+
+    if (authService.currentUserValue.role === 'Employee') {
+      this.displayedColumns.push('client');
+      this.displayedColumns.push('actions');
+    } else {
+      this.displayedColumns.push('actions');
+
+    }
 
     if (this.router.url.match(/\/consultations\/user\/\d+$/)) {
       // Employee wants to see consultation of an user
 
       this.route.paramMap.subscribe(p => {
-        this.userService.getById(parseInt(p.get('id'))).subscribe(user =>{
+        this.clientService.getById(parseInt(p.get('id'))).subscribe(user => {
           if (user) {
             this.user = user;
             this.consultationService.getAllByUser(this.user).subscribe(consultations => console.log(this.consultations = consultations));
@@ -64,12 +74,22 @@ export class ConsultationsComponent implements OnInit {
     this.router.navigate([id], {relativeTo: this.route});
     this.modal
       .open(ModalConsultationComponent, {
-        data: {id},
+        data: {id, acceptConsultation: this.acceptConsultation},
         width: '400px'
       })
       .afterClosed()
       .subscribe(() => {
         this.router.navigate(['.'], {relativeTo: this.route});
       });
+  }
+
+  acceptConsultation(consultation: Consultation) {
+    this.consultationService.acceptConsultation(consultation.id).subscribe(results => {
+      console.log(results);
+      this.modal.closeAll();
+      this.snack.open('La consultation a été acceptée !', '');
+      this.router.navigate(['/consultations/current']);
+
+    })
   }
 }

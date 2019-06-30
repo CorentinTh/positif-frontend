@@ -4,11 +4,11 @@ import { Chart } from 'chart.js';
 
 
 @Component({
-  selector: 'app-bar-chart',
-  templateUrl: './bar-chart.component.html',
-  styleUrls: ['./bar-chart.component.less']
+  selector: 'app-line-chart',
+  templateUrl: './line-chart.component.html',
+  styleUrls: ['./line-chart.component.less']
 })
-export class BarChartComponent implements OnInit {
+export class LineChartComponent implements OnInit {
   @Input() data: any;
   @Input() xLabel: String = '';
   @Input() yLabel: String = '';
@@ -22,13 +22,14 @@ export class BarChartComponent implements OnInit {
   ngOnInit() {
 
     this.chart = new Chart(this.chartEl.nativeElement, {
-      type: 'bar',
+      type: 'line',
       data: {
-        labels: this.data.map(e => e.entry),
+        labels: this.data.map(e => e.day + '/06/2019'),
         datasets: [
           {
             data: this.data.map(e => e.count),
-            backgroundColor: '#673ab7',
+            backgroundColor: 'rgba(103,58,183,0.45)',
+            borderColor: '#673ab7',
           }
         ]
       },

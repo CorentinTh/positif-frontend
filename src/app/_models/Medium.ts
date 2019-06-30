@@ -7,4 +7,5 @@ export class Medium {
   training?:string;
   schoolYear?:string;
   speciality?:string;
+  voiceType?:string;
 }

@@ -12,6 +12,11 @@ export class ClientService {
 
   constructor(private http: HttpClient) { }
 
+  getById(id: number): Observable<User> {
+    return this.http.get<any>(`${environment.apiUrl}?do=getClient&id=${id}`).pipe(map(result => {
+      return result.client;
+    }));
+  }
 
   getAll() : Observable<Client[]> {
     return this.http.get<any>(`${environment.apiUrl}?do=listClients`).pipe(map( result => {

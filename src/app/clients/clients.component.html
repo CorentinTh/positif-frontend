@@ -45,7 +45,6 @@
               <td mat-cell *matCellDef="let element"> {{element.gender}} </td>
             </ng-container>
 
-
             <ng-container matColumnDef="email">
               <th mat-header-cell *matHeaderCellDef>Email</th>
               <td mat-cell *matCellDef="let element"> {{element.email}} </td>
@@ -59,6 +58,11 @@
             <ng-container matColumnDef="phone">
               <th mat-header-cell *matHeaderCellDef>N° de tel.</th>
               <td mat-cell *matCellDef="let element"> {{element.phone}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let element"><a mat-icon-button color="primary" [routerLink]="'/users/' + element.id" matTooltip="Voir le profile"><mat-icon>arrow_forward</mat-icon></a> </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -83,7 +87,7 @@
           </div>
 
           <agm-map [latitude]="45.7659539" [longitude]="4.8555385" [zoom]="14" class="google-map" [fitBounds]="true" >
-            <agm-marker *ngFor="let client of clients | filterBy:searchQuery:displayedColumns" [latitude]="client.address.lon" [longitude]="client.address.lat" [agmFitBounds]="true">
+            <agm-marker *ngFor="let client of clients | filterBy:searchQuery:displayedColumns" [latitude]="client.address.lat" [longitude]="client.address.lon" [agmFitBounds]="true">
               <agm-info-window [isOpen]="true">
                 {{client.firstname | capitalize}} {{client.lastname | capitalize}} <br>
                 <a [routerLink]="'/users/' + client.id">Voir son profil</a>
